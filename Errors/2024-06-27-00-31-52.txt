@@ -1,0 +1,4 @@
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at cardscore_api.Services.Soccer365ParserService.ParseActions(HtmlNodeCollection actionsElems, String leagueName, HtmlDocument gameDoc, Team[] teams)
+   at cardscore_api.Services.Soccer365ParserService.ParseGameByPage(String url, String leagueName, Boolean withActions)
+   at cardscore_api.Controllers.ParserController.GetGame(String gameUrl, String leagueUrl)

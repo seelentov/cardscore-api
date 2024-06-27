@@ -1,0 +1,120 @@
+﻿@page "/login"
+@using Blazored.LocalStorage
+@using cardscore_api.Models
+@using cardscore_api.Models.Dtos
+@using cardscore_api.Services
+
+@rendermode InteractiveServer
+
+@inject JwtService JwtSrv
+@inject UserService UserSrv
+@inject NavigationManager NavigationManager
+@inject BCryptService BCryptService
+@inject ILocalStorageService _localstorage
+@inject IJSRuntime JsRuntime
+
+<style>
+    .aside{
+        display: none !important;
+    }
+
+    header{
+        display: none !important;
+    }
+
+    .wrapper{
+        width: 100% !important;
+    }
+</style>
+
+<div class="login">
+    <div class="form">
+        <h1>Cardscore административная панель</h1>
+        <div class="input">
+            <input type="text" placeholder="Логин" @bind-value="authDto.Login">
+        </div>
+        <div class="input">
+            <input type="password" placeholder="Пароль" @bind-value="authDto.Password">
+        </div>
+        <button class="button" @onclick="HandleLoginWrap">Войти</button>
+        @if(!isOk){
+            <p>Неверный логин или пароль</p>
+        }
+
+    </div>
+</div>
+
+@code
+{
+    private AuthDto authDto = new();
+
+    private bool isOk = true;
+
+    async void HandleLoginWrap(){
+        try
+        {
+            if (await handleLogin())
+            {
+                NavigationManager.NavigateTo("/users");
+            }
+            else
+            {
+                isOk = false;
+            }
+            StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", ex.Message);
+        }
+       
+    }
+
+    async Task<bool> handleLogin()
+    {
+        var user = await UserSrv.GetByName(authDto.Login);
+
+        if (user == null)
+        {
+            user = await UserSrv.GetByPhone(authDto.Login);
+        }
+
+        if (user == null)
+        {
+            user = await UserSrv.GetByEmail(authDto.Login);
+        }
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        bool isCorrectPassword = BCryptService.Verify(authDto.Password, user.PasswordHash);
+
+        if (!isCorrectPassword)
+        {
+            return false;
+        }
+
+        if (!user.Active)
+        {
+            return false;
+        }
+
+        if (user.RoleId != 1)
+        {
+            return false;
+        }
+
+        string token = JwtSrv.GetUserToken(new UserTokenData()
+            {
+                Id = user.Id,
+                Name = user.Name
+            });
+
+        await _localstorage.SetItemAsync("token", token);
+        
+        return true;
+    }
+
+}

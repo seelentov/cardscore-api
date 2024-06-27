@@ -1,0 +1,3 @@
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at cardscore_api.Services.Soccer365ParserService.ParsePlayerByPage(String url, String leagueName) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\Soccer365ParserService.cs:line 351
+   at cardscore_api.Controllers.ParserController.GetPlayer(String leagueUrl, String playerUrl) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Controllers\ParserController.cs:line 197

@@ -1,0 +1,56 @@
+﻿@page "/info/{slug}"
+@using System.Text.Json
+@using cardscore_api.Services
+@using cardscore_api.Models
+@using cardscore_api.Models.Dtos
+
+@rendermode InteractiveServer
+
+@inject InfosService InfoSvc
+@inject RedisService RedisSrv
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@using cardscore_api.Components.Layout
+<CheckAuth />
+
+<PageTitle>@info.Name</PageTitle>
+
+<div class="main-header">
+    <h2>
+        @info.Name
+    </h2>
+    <button class="button" @onclick="Save">
+        Сохранить
+    </button>
+</div>
+<form action="#" class="main-edit">
+    <label for="" class="textarea">
+        <p>Текст:</p>
+        <textarea name="" id="" @bind="text"></textarea>
+    </label>
+</form>
+@code
+{
+    [Parameter]
+    public string slug { get; set; }
+
+    public string text { get; set; }
+
+    public Info info;
+
+    protected override async Task OnInitializedAsync()
+    {
+        info = await InfoSvc.GetBySlug(slug);
+        text = info.Description;
+    }
+
+    async void Save()
+    {
+        await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+        await InfoSvc.EditBySlug(slug, text);
+        await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+
+    }
+
+}

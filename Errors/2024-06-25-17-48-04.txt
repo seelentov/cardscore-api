@@ -1,0 +1,13 @@
+StatusCode: 400, ReasonPhrase: 'Bad Request', Version: 1.1, Content: System.Net.Http.HttpConnectionResponseContent, Headers:
+{
+  Vary: Accept-Encoding, Origin
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Date: Tue, 25 Jun 2024 12:48:03 GMT
+  Via: 1.1 google
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Alt-Svc: h3=":443"; ma=2592000
+  Alt-Svc: h3-29=":443"; ma=2592000
+  Content-Type: application/json; charset=utf-8
+  Content-Length: 158
+}

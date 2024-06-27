@@ -1,0 +1,70 @@
+﻿@using cardscore_api.Models
+@using Blazored.LocalStorage
+@using cardscore_api.Services
+
+@rendermode InteractiveServer
+
+@inject ILocalStorageService _localstorage
+@inject JwtService JwtSrv
+@inject UserService UserSrv
+@inject NavigationManager NavigationManager
+<aside class="aside">
+    <h1>
+        CardScoreApi
+    </h1>
+    <NavLink class="nav-link" href="/users" Match="NavLinkMatch.All">
+        Пользователи
+    </NavLink>
+    <NavLink class="nav-link" href="/leagues" Match="NavLinkMatch.All">
+        Список лиг
+    </NavLink>
+    <NavLink class="nav-link" href="/parser" Match="NavLinkMatch.All">
+        Парсер
+    </NavLink>
+    <NavLink class="nav-link" href="/reglaments" Match="NavLinkMatch.All">
+        Регламенты
+    </NavLink>
+    <NavLink class="nav-link" href="/info/contacts" Match="NavLinkMatch.All">
+        Контакты
+    </NavLink>
+    <NavLink class="nav-link" href="/info/payment" Match="NavLinkMatch.All">
+        Информация об оплате
+    </NavLink>
+    <NavLink class="nav-link" href="/info/policy" Match="NavLinkMatch.All">
+        Политика конфиденциальности
+    </NavLink>
+    <hr />
+    <div class="aside__profile">
+        <p>@(name)</p>
+        <button @onclick="Logout">Выйти</button>
+    </div>
+</aside>
+
+
+@code{
+    private string name;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var token = await _localstorage.GetItemAsStringAsync("token");
+
+        if (!String.IsNullOrEmpty(token))
+        {
+            var userData = JwtSrv.DecodeUserToken(token.Replace("\"", ""));
+
+            if (userData != null)
+            {
+                var user = await UserSrv.GetById(userData.Id);
+                name = user.Name;
+            }
+
+        }
+        StateHasChanged();
+    }
+
+    async Task Logout()
+    {
+        await _localstorage.ClearAsync();
+        NavigationManager.NavigateTo("/login");
+    }
+}

@@ -1,0 +1,125 @@
+﻿@page "/users/{id:int}"
+@using System.Text.Json
+@using cardscore_api.Services
+@using cardscore_api.Models
+
+@rendermode InteractiveServer
+
+@inject UserService UsersSrv
+@inject RoleService RoleSrv
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@using cardscore_api.Components.Layout
+<CheckAuth />
+
+<PageTitle>@user.Name</PageTitle>
+
+
+<div class="main-header">
+    <h2>
+        @user.Name
+    </h2>
+    <button class="button" @onclick="Save">
+        Сохранить
+    </button>
+</div>
+<form action="#" class="main-edit">
+    <label for="">
+        Имя:
+        <div class="input"><input type="text" @bind-value="user.Name"></div>
+    </label>
+    <label for="">
+        Номер телефона:
+        <div class="input"><input type="text" @bind-value="user.Phone"></div>
+    </label>
+    <label for="">
+        E-mail:
+        <div class="input"><input type="text" @bind-value="user.Email"></div>
+    </label>
+    <label for="">
+        Новый пароль:
+        <div class="input"><input type="text" @bind-value="user.PasswordHash" @oninput="ChangePass"></div>
+    </label>
+    <label for="">
+        Уникальный ID устройства:
+        <div class="input"><input type="text" @bind-value="user.UniqueId"></div>
+    </label>
+    <label for="">
+        Роль:
+        <select class="select">
+            @foreach (var role in roles)
+            {
+                <option @onclick="() => ChangeRole(role)" selected="@(role.Id == user.RoleId)">@role.Name</option>
+            }
+        </select>
+    </label>
+    <label class="datetime">
+        Подписка до:
+        <input type="datetime-local"
+               @bind-value="user.SubData" />
+    </label>
+    <label for="">
+        Тип подписки:
+        <select class="select">
+            @foreach (var subStatus in Enum.GetValues(typeof(SubStatus)).Cast<SubStatus>())
+            {
+                <option @onclick="() => ChangeSubStatus(subStatus)" selected="@(subStatus == user.SubStatus)">@subStatus</option>
+            }
+        </select>
+    </label>
+    <label for="" class="checkbox">
+        Активный:
+        <input type="checkbox" @bind-value="user.Active" checked="@user.Active" />
+        <span class="checkmark"></span>
+    </label>
+</form>
+@code
+{
+    [Parameter]
+    public int id { get; set; }
+
+    public User user;
+
+    public List<Role> roles;
+
+    public bool IsPassChanged = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UsersSrv.GetById(id);
+        roles = await RoleSrv.GetAll();
+    }
+
+    void ChangeRole(Role role)
+    {
+        user.Role = role;
+        user.RoleId = role.Id;
+    }
+
+    async void ChangePass()
+    {
+        if (!IsPassChanged)
+        {
+            IsPassChanged = true;
+            await JsRuntime.InvokeVoidAsync("alert", "При сохранении пароль изменится! Обновите страницу, что бы изменения не были сохранены");
+        }
+        
+    }
+
+    void ChangeSubStatus(SubStatus subStatus)
+    {
+        user.SubStatus = subStatus;
+    }
+
+    async void Save()
+    {
+        await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+        await UsersSrv.Update(id, user, IsPassChanged);
+        IsPassChanged = false;
+        await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+        NavigationManager.NavigateTo("/users");
+        
+    }
+
+}

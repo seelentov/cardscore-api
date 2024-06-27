@@ -1,0 +1,5 @@
+System.FormatException: String 'J1 Лига26.06.2024' was not recognized as a valid DateTime.
+   at System.DateTime.ParseExact(String s, String format, IFormatProvider provider)
+   at cardscore_api.Services.Soccer365ParserService.ParseDateTimeDDMMYYYY(String input)
+   at cardscore_api.Services.Soccer365ParserService.ParsePlayerByPage(String url, String leagueName)
+   at cardscore_api.Controllers.ParserController.GetPlayer(String leagueUrl, String playerUrl)

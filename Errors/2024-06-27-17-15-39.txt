@@ -1,0 +1,19 @@
+System.IO.IOException: Unable to read data from the transport connection: Попытка установить соединение была безуспешной, т.к. от другого компьютера за требуемое время не получен нужный отклик, или было разорвано уже установленное соединение из-за неверного отклика уже подключенного компьютера..
+ ---> System.Net.Sockets.SocketException (10060): Попытка установить соединение была безуспешной, т.к. от другого компьютера за требуемое время не получен нужный отклик, или было разорвано уже установленное соединение из-за неверного отклика уже подключенного компьютера.
+   at System.Net.Sockets.NetworkStream.Read(Span`1 buffer)
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.NetworkStream.Read(Span`1 buffer)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.IO.Stream.Read(Span`1 buffer)
+   at System.Net.Http.HttpConnection.FillAsync(Boolean async)
+   at System.Net.Http.HttpConnection.ChunkedEncodingReadStream.Read(Span`1 buffer)
+   at System.IO.StreamReader.ReadBuffer()
+   at HtmlAgilityPack.HtmlDocument.Load(TextReader reader)
+   at HtmlAgilityPack.HtmlWeb.Get(Uri uri, String method, String path, HtmlDocument doc, IWebProxy proxy, ICredentials creds)
+   at HtmlAgilityPack.HtmlWeb.Load(Uri uri, String method)
+   at cardscore_api.Services.Soccer365ParserService.ParsePage(String url, String h1Element, Nullable`1 startDateFilter, Nullable`1 endDateFilter) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\Soccer365ParserService.cs:line 150
+   at cardscore_api.Services.Soccer365ParserService.GetGamesByUrl(String url, String name, Nullable`1 startDateFilter, Nullable`1 endDateFilter) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\Soccer365ParserService.cs:line 105
+   at cardscore_api.Controllers.AuthController.GetFavoriteGames(String startDateString, String endDateString) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Controllers\AuthController.cs:line 221

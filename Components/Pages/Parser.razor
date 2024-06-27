@@ -1,0 +1,138 @@
+﻿@page "/parser"
+
+@using System.Text.Json
+@using cardscore_api.Services
+@using cardscore_api.Models
+
+@rendermode InteractiveServer
+@inject LeagueParseListService ParseListSrv
+@inject LeaguesService LeaguesSrv
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@using cardscore_api.Components.Layout
+<CheckAuth />
+
+<PageTitle>Парсер</PageTitle>
+
+<div class="main-header">
+    <h2>
+        Парсер
+    </h2>
+    <div class="input">
+        <img src="/img/search.svg">
+        <input type="text" placeholder="Поиск" @bind-value="search" @oninput="OnSearchTextChanged" />
+    </div>
+    <a href="/parser/create" class="button">
+        Добавить новый
+    </a>
+    <button class="button" @onclick="StartParser">
+        Запустить парсер
+    </button>
+</div>
+<div class="main-table">
+    <table>
+        <tr>
+            <th>
+                ID
+            </th>
+            <th>
+                Имя лиги
+            </th>
+            <th>
+                Ссылка на лигу
+            </th>
+            <th>
+                Тип парсера
+            </th>
+            <th>
+
+            </th>
+            <th>
+
+            </th>
+        </tr>
+        <tbody>
+            @if (parserList != null)
+            {
+                @foreach (var league in filterFunc != null ? parserList.Where(filterFunc) : parserList)
+                {
+                    <tr>
+                        <td>
+                            @league.Id
+                        </td>
+                        <td>
+                            @league.Name
+                        </td>
+                        <td>
+                            @league.Url
+                        </td>
+                        <td>
+                            @league.ParserType.ToString()
+                        </td>
+                        <td>
+                            <a href="/parser/@league.Id">
+                                Редактировать
+                            </a>
+                        </td>
+                        <td>
+                            <button @onclick="()=>Delete(league.Id)">
+                                Удалить
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code
+{
+    List<LeagueParseData> parserList;
+
+    string search = "";
+
+    Func<LeagueParseData, bool> filterFunc;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        parserList = await ParseListSrv.GetAll();
+        UpdateFilter();
+    }
+
+    void OnSearchTextChanged()
+    {
+        UpdateFilter();
+    }
+
+    void UpdateFilter()
+    {
+        filterFunc = (u) => u.Name.Contains(search) || u.Url.Contains(search);
+    }
+
+    async void Delete(int id)
+    {
+        await ParseListSrv.Remove(id);
+        parserList = await ParseListSrv.GetAll();
+    }
+
+    async void StartParser()
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+            await LeaguesSrv.ParseFromParseData();
+            await JsRuntime.InvokeVoidAsync("alert", "Успешно!");
+            NavigationManager.NavigateTo("/leagues");
+
+        }
+        catch(Exception ex)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", JsonSerializer.Serialize(ex));
+        }
+    }
+
+}

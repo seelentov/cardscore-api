@@ -1,0 +1,75 @@
+﻿@page "/leagues/{id:int}"
+@using System.Text.Json
+@using cardscore_api.Services
+@using cardscore_api.Models
+
+@rendermode InteractiveServer
+
+@inject LeaguesService LeagueSrv
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@using cardscore_api.Components.Layout
+<CheckAuth />
+
+<PageTitle>@league.Title</PageTitle>
+
+<div class="main-header">
+    <h2>
+        @league.Title
+    </h2>
+    <button class="button" @onclick="Save">
+        Сохранить
+    </button>
+</div>
+<form action="#" class="main-edit">
+    <label for="">
+        Название:
+        <div class="input"><input type="text" @bind-value="league.Title"></div>
+    </label>
+    <label for="">
+        Страна:
+        <div class="input"><input type="text" @bind-value="league.Country"></div>
+    </label>
+    <label for="">
+        Количество игр:
+        <div class="input"><input type="text" @bind-value="league.GamesCount"></div>
+    </label>
+    <label class="datetime">
+        Дата, от:
+        <input type="datetime-local"
+               @bind-value="league.StartDate" />
+    </label>
+    <label class="datetime">
+        Дата, до:
+        <input type="datetime-local"
+               @bind-value="league.EndDate" />
+    </label>
+    <label for="" class="checkbox">
+        Активный:
+        <input type="checkbox" @bind-value="league.Active" checked="@league.Active" />
+        <span class="checkmark"></span>
+    </label>
+</form>
+@code
+{
+    [Parameter]
+    public int id { get; set; }
+
+    public League league;
+
+    protected override async Task OnInitializedAsync()
+    {
+        league = await LeagueSrv.Get(id);
+    }
+
+    async void Save()
+    {
+        await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+        await LeagueSrv.Edit(id, league);
+        await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+        NavigationManager.NavigateTo("/parser");
+        
+    }
+
+}

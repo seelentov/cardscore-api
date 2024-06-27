@@ -1,0 +1,113 @@
+﻿@page "/leagues"
+
+@using cardscore_api.Services
+@using cardscore_api.Models
+
+@rendermode InteractiveServer
+@inject LeaguesService LeaguesSrv
+
+@using cardscore_api.Components.Layout
+<CheckAuth />
+
+<PageTitle>Список лиг</PageTitle>
+
+<div class="main-header">
+    <h2>
+        Список лиг
+    </h2>
+    <div class="input">
+        <img src="/img/search.svg">
+        <input type="text" placeholder="Поиск" @bind-value="search" @oninput="OnSearchTextChanged" />
+    </div>
+</div>
+<div class="main-table">
+    <table>
+        <tr>
+            <th>
+                ID
+            </th>
+            <th>
+                Имя лиги
+            </th>
+            <th>
+                Страна
+            </th>
+            <th>
+                Дата
+            </th>
+            <th>
+                
+            </th>
+            <th>
+
+            </th>
+        </tr>
+        <tbody>
+            @if (leaguesList != null)
+            {
+                @foreach (var league in filterFunc != null ? leaguesList.Where(filterFunc) : leaguesList)
+                {
+                    <tr>
+                        <td>
+                            @league.Id
+                        </td>
+                        <td>
+                            @league.Title
+                        </td>
+                        <td>
+                            @league.Country
+                        </td>
+                        <td>
+                            @league.StartDate - @league.EndDate
+                        </td>
+                        
+                        <td>
+                            <a href="/leagues/@league.Id">
+                                Редактировать
+                            </a>
+                        </td>
+                        <td>
+                            <button @onclick="()=>Delete(league.Id)">
+                                Удалить
+                            </button>
+                        </td>
+                        
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code
+{
+    List<League> leaguesList;
+
+    string search = "";
+
+    Func<League, bool> filterFunc;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        leaguesList = await LeaguesSrv.GetAll();
+        UpdateFilter();
+    }
+
+    void OnSearchTextChanged()
+    {
+        UpdateFilter();
+    }
+
+    void UpdateFilter()
+    {
+        filterFunc = (u) => u.Title.Contains(search) || u.Country.Contains(search) || u.Url.Contains(search);
+    }
+
+    async void Delete(int id)
+    {
+        await LeaguesSrv.Remove(id);
+        leaguesList = await LeaguesSrv.GetAll();
+    }
+
+}

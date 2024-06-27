@@ -1,0 +1,100 @@
+﻿@page "/users/create"
+@using System.Text.Json
+@using cardscore_api.Models.Dtos
+@using cardscore_api.Services
+@using cardscore_api.Models
+
+@rendermode InteractiveServer
+
+@inject UserService UsersSrv
+@inject RoleService RoleSrv
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@using cardscore_api.Components.Layout
+<CheckAuth />
+
+<PageTitle>Новый пользователь</PageTitle>
+
+<div class="main-header">
+    <h2>
+        Новый пользователь
+    </h2>
+    <button class="button" @onclick="Save">
+        Сохранить
+    </button>
+</div>
+<form action="#" class="main-edit">
+    <label for="">
+        Имя:
+        <div class="input"><input type="text" @bind-value="createUserDto.Name"></div>
+    </label>
+    <label for="">
+        Номер телефона:
+        <div class="input"><input type="text" @bind-value="createUserDto.Phone"></div>
+    </label>
+    <label for="">
+        E-mail:
+        <div class="input"><input type="text" @bind-value="createUserDto.Email"></div>
+    </label>
+    <label for="">
+        Пароль:
+        <div class="input"><input type="text" @bind-value="createUserDto.Password"></div>
+    </label>
+</form>
+@code
+{
+
+    public CreateUserDto createUserDto = new();
+
+    public List<Role> roles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        createUserDto.UniqueId = "blank";
+    }
+
+    async void Save()
+    {
+        try
+        {
+            if (createUserDto.UniqueId == "" || createUserDto.Name == "" || createUserDto.Email == "" || createUserDto.Password == "" || createUserDto.Phone == "")
+            {
+                throw new Exception("Заполните все данные");
+            }
+
+            await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+            var dublicatedName = (await UsersSrv.GetByName(createUserDto.Name)) != null;
+
+            if (dublicatedName)
+            {
+                throw new Exception("Пользователь с таким именем уже существует");
+            }
+
+            var dublicatedEmail = (await UsersSrv.GetByEmail(createUserDto.Email)) != null;
+
+            if (dublicatedEmail)
+            {
+                throw new Exception("Пользователь с таким E-mail уже существует");
+            }
+
+
+            var dublicatedPhone = (await UsersSrv.GetByPhone(createUserDto.Phone)) != null;
+
+            if (dublicatedPhone)
+            {
+                throw new Exception("Пользователь с таким номером телефона уже существует");
+            }
+
+            await UsersSrv.Create(createUserDto);
+            await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+            NavigationManager.NavigateTo("/users");
+
+        }
+        catch(Exception ex)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", ex.ToString());
+        }
+    }
+
+}

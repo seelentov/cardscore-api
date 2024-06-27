@@ -1,0 +1,6 @@
+@cardscore_api_HostAddress = https://mqgf1bpb-5125.euw.devtunnels.ms/api
+
+GET {{cardscore_api_HostAddress}}/info/contacts
+Accept: application/json
+
+###

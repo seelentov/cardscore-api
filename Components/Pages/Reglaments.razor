@@ -1,0 +1,110 @@
+﻿@page "/reglaments"
+
+@using cardscore_api.Services
+@using cardscore_api.Models
+
+@rendermode InteractiveServer
+@inject ReglamentsService ReglamentsSrv
+
+@using cardscore_api.Components.Layout
+<CheckAuth />
+
+<PageTitle>Регламенты</PageTitle>
+
+<div class="main-header">
+    <h2>
+        Регламенты
+    </h2>
+    <div class="input">
+        <img src="/img/search.svg">
+        <input type="text" placeholder="Поиск" @bind-value="search" @oninput="OnSearchTextChanged" />
+    </div>
+</div>
+<div class="main-table">
+    <table>
+        <tr>
+            <th>
+                ID
+            </th>
+            <th>
+                Имя лиги
+            </th>
+            <th>
+                Текст
+            </th>
+            <th>
+                
+            </th>
+            <th>
+
+            </th>
+            <th>
+
+            </th>
+        </tr>
+
+        @if (reglamentsList != null)
+        {
+            @foreach (var reglament in filterFunc != null ? reglamentsList.Where(filterFunc) : reglamentsList)
+            {
+                <tr>
+                    <td>
+                        @reglament.Id
+                    </td>
+                    <td>
+                        @reglament.Name
+                    </td>
+                    <td>
+                        @(reglament.Text.Substring(0, reglament.Text.Length < 10 ? reglament.Text.Length : 10) + "...")
+                    </td>
+                    <td>
+                        
+                    </td>
+                    <td>
+                        <a href="/reglaments/@reglament.Id">
+                            Редактировать
+                        </a>
+                    </td>
+                    <td>
+                        <button @onclick="()=>Delete(reglament.Id)">
+                            Удалить
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </table>
+</div>
+
+@code
+{
+    List<Reglament> reglamentsList;
+
+    string search = "";
+
+    Func<Reglament, bool> filterFunc;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        reglamentsList = await ReglamentsSrv.GetAll();
+        UpdateFilter();
+    }
+
+    void OnSearchTextChanged()
+    {
+        UpdateFilter();
+    }
+
+    void UpdateFilter()
+    {
+        filterFunc = (u) => u.Name.Contains(search) || u.Text.Contains(search);
+    }
+
+    async void Delete(int id)
+    {
+        await ReglamentsSrv.Remove(id);
+        reglamentsList = await ReglamentsSrv.GetAll();
+    }
+
+}

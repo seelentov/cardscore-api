@@ -1,0 +1,54 @@
+﻿@using cardscore_api.Models
+@using Blazored.LocalStorage
+@using cardscore_api.Services
+
+@rendermode InteractiveServer
+
+@inject ILocalStorageService _localstorage
+@inject JwtService JwtSrv
+@inject UserService UserSrv
+@inject NavigationManager NavigationManager
+
+
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!(await CheckToken()))
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
+
+    async Task<bool> CheckToken()
+    {
+        var token = await _localstorage.GetItemAsStringAsync("token");
+
+        if (String.IsNullOrEmpty(token))
+        {
+            return false;
+        }
+
+        var userData = JwtSrv.DecodeUserToken(token.Replace("\"", ""));
+
+        if (userData == null)
+        {
+            return false;
+        }
+
+        var user = await UserSrv.GetById(userData.Id);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        if (user.RoleId != 1)
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
