@@ -16,9 +16,8 @@ namespace cardscore_api.Controllers
         private readonly UrlService _urlService;
         private readonly LeaguesService _leaguesService;
         private readonly ErrorsService _errorsService;
-        private readonly RedisService _redisService;
         private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-4);
-        public ParserController(ILogger<AuthController> logger, Soccer365ParserService soccer365parserService, LeagueParseListService parserListService, LeaguesService leaguesService, UrlService urlService, ErrorsService errorsService, RedisService redisService)
+        public ParserController(ILogger<AuthController> logger, Soccer365ParserService soccer365parserService, LeagueParseListService parserListService, LeaguesService leaguesService, UrlService urlService, ErrorsService errorsService)
         {
             _logger = logger;
             _soccer365parserService = soccer365parserService;
@@ -26,7 +25,6 @@ namespace cardscore_api.Controllers
             _leaguesService = leaguesService;
             _urlService = urlService;
             _errorsService = errorsService;
-            _redisService = redisService;
         }
 
         [HttpGet("leagues/{id}")]
@@ -34,21 +32,13 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                var key = _redisService.CreateKeyFromRequest(Request);
-
-                var data = await _redisService.Get<League>(key);
-
-                if (data == null)
-                {
-                    data = await _leaguesService.Get(id);
-                }
+                var data = await _leaguesService.Get(id);
 
                 if (data == null)
                 {
                     return NotFound();
                 }
 
-                await _redisService.SetOneMins(key, data);
                 return Ok(data);
             }
             catch (Exception e)
@@ -64,15 +54,8 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                var key = _redisService.CreateKeyFromRequest(Request);
+                var data = await _leaguesService.GetAll();
 
-                var data = await _redisService.Get<List<League>>(key);
-
-                if (data == null)
-                {
-                    data = await _leaguesService.GetAll();
-                    await _redisService.SetOneMins(key, data);
-                }
                 return Ok(data);
             }
             catch (Exception e)
@@ -89,37 +72,30 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                var key = _redisService.CreateKeyFromRequest(Request);
+                var normalizeUrl = _urlService.NormalizeUrl(url);
 
-                var data = await _redisService.Get<LeagueIncludeGames>(key);
+                LeagueIncludeGames data = null!;
+
+                var leagueParseData = await _parserListService.GetByUrl(normalizeUrl);
+
+                if (leagueParseData == null)
+                {
+                    return BadRequest(new { noParser = $"Лига по url {normalizeUrl} не найдена" });
+                }
+
+
+                switch (leagueParseData.ParserType)
+                {
+                    case (int)ParserType.Soccer365:
+                        data = await _soccer365parserService.GetDataByUrl(leagueParseData.Url, _startDate);
+                        break;
+                }
 
                 if (data == null)
                 {
-                    var normalizeUrl = _urlService.NormalizeUrl(url);
-
-                    data = null!;
-
-                    var leagueParseData = await _parserListService.GetByUrl(normalizeUrl);
-
-                    if (leagueParseData == null)
-                    {
-                        return BadRequest(new { noParser = $"Лига по url {normalizeUrl} не найдена" });
-                    }
-
-
-                    switch (leagueParseData.ParserType)
-                    {
-                        case (int)ParserType.Soccer365:
-                            data = await _soccer365parserService.GetDataByUrl(leagueParseData.Url, _startDate);
-                            break;
-                    }
-
-                    if (data == null)
-                    {
-                        return BadRequest(new { noParser = $"Для лиги {leagueParseData.Name} отсутствует парсер" });
-                    }
+                    return BadRequest(new { noParser = $"Для лиги {leagueParseData.Name} отсутствует парсер" });
                 }
-                await _redisService.SetOneMins(key, data);
+
                 return Ok(data);
             }
             catch (Exception e)

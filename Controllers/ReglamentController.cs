@@ -10,12 +10,10 @@ namespace cardscore_api.Controllers
     {
         private readonly ReglamentsService _reglamentsService;
         private readonly ErrorsService _errorsService;
-        private readonly RedisService _redisService;
-        public ReglamentController(ReglamentsService reglamentsService, ErrorsService errorsService, RedisService redisService)
+        public ReglamentController(ReglamentsService reglamentsService, ErrorsService errorsService)
         {
             _reglamentsService = reglamentsService;
             _errorsService = errorsService;
-            _redisService = redisService;
         }
 
         [HttpGet]
@@ -23,15 +21,7 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                var key = _redisService.CreateKeyFromRequest(Request);
-
-                var data = await _redisService.Get<List<Reglament>>(key);
-
-                if(data == null)
-                {
-                    data = await _reglamentsService.GetAll();
-                    await _redisService.SetOneMins(key, data);
-                }
+                var data = await _reglamentsService.GetAll();
 
                 return Ok(data);
             }
@@ -48,21 +38,13 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                var key = _redisService.CreateKeyFromRequest(Request);
-
-                var data = await _redisService.Get<Reglament>(key);
-
-                if(data == null)
-                {
-                    data = await _reglamentsService.GetByName(name);
-                }
-
+                var data = await _reglamentsService.GetByName(name);
+                
                 if (data == null)
                 {
                     return NotFound($"Регламент {name} не найден");
                 }
 
-                await _redisService.SetOneMins(key, data);
                 return Ok(data);
             }
             catch (Exception e)

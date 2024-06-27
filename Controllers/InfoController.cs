@@ -11,13 +11,11 @@ namespace cardscore_api.Controllers
         private readonly InfosService _infoService;
         private readonly ILogger<InfoController> _logger;
         private readonly ErrorsService _errorsService;
-        private readonly RedisService _redisService;
-        public InfoController(InfosService infoService, ILogger<InfoController> logger, ErrorsService errorsService, RedisService redisService)
+        public InfoController(InfosService infoService, ILogger<InfoController> logger, ErrorsService errorsService)
         {
             _infoService = infoService;
             _logger = logger;
             _errorsService = errorsService;
-            _redisService = redisService;
         }
 
         [HttpGet("contacts")]
@@ -25,16 +23,7 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                var key = _redisService.CreateKeyFromRequest(Request);
-
-                var data = await _redisService.Get<Info>(key);
-
-                if(data == null)
-                {
-                    data = await _infoService.GetContacts();
-                    await _redisService.SetOneMins(key, data);
-                }
-                
+                var data = await _infoService.GetContacts();
                 return Ok(data);
             }
             catch (Exception e)
@@ -42,7 +31,7 @@ namespace cardscore_api.Controllers
                 _errorsService.CreateErrorFile(e);
                 return StatusCode(500, e);
             }
-           
+
         }
 
         [HttpGet("payment")]
@@ -50,16 +39,7 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                var key = _redisService.CreateKeyFromRequest(Request);
-
-                var data = await _redisService.Get<Info>(key);
-
-                if (data == null)
-                {
-                    data = await _infoService.GetPayment();
-                    await _redisService.SetOneMins(key, data);
-                }
-
+                var data = await _infoService.GetPayment();
                 return Ok(data);
             }
             catch (Exception e)
@@ -67,7 +47,7 @@ namespace cardscore_api.Controllers
                 _errorsService.CreateErrorFile(e);
                 return StatusCode(500, e);
             }
-            
+
         }
 
         [HttpGet("policy")]
@@ -75,16 +55,7 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                var key = _redisService.CreateKeyFromRequest(Request);
-
-                var data = await _redisService.Get<Info>(key);
-
-                if (data == null)
-                {
-                    data = await _infoService.GetPolicy();
-                    await _redisService.SetOneMins(key, data);
-                }
-
+                var data = await _infoService.GetPolicy();
                 return Ok(data);
             }
             catch (Exception e)
@@ -92,7 +63,7 @@ namespace cardscore_api.Controllers
                 _errorsService.CreateErrorFile(e);
                 return StatusCode(500, e);
             }
-           
+
         }
     }
 }
