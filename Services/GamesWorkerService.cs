@@ -37,6 +37,7 @@ namespace cardscore_api.Services
             profile.SetPreference("permissions.default.image", 2);
 
             _driverOptions = new FirefoxOptions();
+            _driverOptions.BinaryLocation = "/usr/bin/firefox";
             _driverOptions.Profile = profile;
             _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
             _driverOptions.AddArgument("--headless");
