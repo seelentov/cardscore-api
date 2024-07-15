@@ -1,8 +1,8 @@
-﻿using cardscore_api.Attributes;
-using cardscore_api.Models;
+﻿using cardscore_api.Models;
 using cardscore_api.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
+using System;
+using System.Text.Json;
 
 namespace cardscore_api.Controllers
 {
@@ -11,20 +11,21 @@ namespace cardscore_api.Controllers
     public class ParserController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
-        private readonly Soccer365ParserService _soccer365parserService;
+        private readonly ParserService _parserService;
         private readonly LeagueParseListService _parserListService;
         private readonly UrlService _urlService;
         private readonly LeaguesService _leaguesService;
         private readonly ErrorsService _errorsService;
-        private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-4);
-        public ParserController(ILogger<AuthController> logger, Soccer365ParserService soccer365parserService, LeagueParseListService parserListService, LeaguesService leaguesService, UrlService urlService, ErrorsService errorsService)
+        private readonly RedisService _redisService;
+        public ParserController(ILogger<AuthController> logger, ParserService parserService, LeagueParseListService parserListService, LeaguesService leaguesService, UrlService urlService, ErrorsService errorsService, RedisService redisService)
         {
             _logger = logger;
-            _soccer365parserService = soccer365parserService;
+            _parserService = parserService;
             _parserListService = parserListService;
             _leaguesService = leaguesService;
             _urlService = urlService;
             _errorsService = errorsService;
+            _redisService = redisService;
         }
 
         [HttpGet("leagues/{id}")]
@@ -74,26 +75,20 @@ namespace cardscore_api.Controllers
             {
                 var normalizeUrl = _urlService.NormalizeUrl(url);
 
-                LeagueIncludeGames data = null!;
+                var cachedData = await _redisService.GetCachedDataByUrl(normalizeUrl);
+                
 
-                var leagueParseData = await _parserListService.GetByUrl(normalizeUrl);
-
-                if (leagueParseData == null)
+                if (cachedData != null)
                 {
-                    return BadRequest(new { noParser = $"Лига по url {normalizeUrl} не найдена" });
+                    cachedData.GamesCount = cachedData.Games.Count;
+                    return Ok(cachedData);
                 }
 
-
-                switch (leagueParseData.ParserType)
-                {
-                    case (int)ParserType.Soccer365:
-                        data = await _soccer365parserService.GetDataByUrl(leagueParseData.Url, _startDate);
-                        break;
-                }
+                LeagueIncludeGames data = await _parserService.GetDataByUrl(normalizeUrl);
 
                 if (data == null)
                 {
-                    return BadRequest(new { noParser = $"Для лиги {leagueParseData.Name} отсутствует парсер" });
+                    return BadRequest(new { noParser = $"Для лиги {normalizeUrl} отсутствует парсер" });
                 }
 
                 return Ok(data);
@@ -112,28 +107,21 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                Game gameData = null!;
-
                 var normalizeUrlLeague = _urlService.NormalizeUrl(leagueUrl);
                 var normalizeUrlGame = _urlService.NormalizeUrl(gameUrl);
 
-                League leagueData;
+                var cachedLeague = await _redisService.GetCachedDataByUrl(normalizeUrlLeague);
 
-                var leagueParseData = await _parserListService.GetByUrl(normalizeUrlLeague);
-
-                if (leagueParseData == null)
+                if(cachedLeague != null)
                 {
-                    return BadRequest(new { noParser = $"Лига по url {normalizeUrlLeague} не найдена" });
-                }
+                    var thisGame = cachedLeague.Games.FirstOrDefault(g=>g.Url == normalizeUrlGame);
 
-                switch (leagueParseData.ParserType)
-                {
-                    case (int)ParserType.Soccer365:
-                        leagueData = await _leaguesService.GetByUrl(leagueParseData.Url);
-                        gameData = await _soccer365parserService.ParseGameByPage(normalizeUrlGame, leagueData.Title, false);
-                        break;
+                    return Ok(thisGame);
                 }
+                
+                League leagueData = await _leaguesService.GetByUrl(normalizeUrlLeague);
 
+                Game gameData = await _parserService.ParseGameByPage(normalizeUrlGame, leagueData.Title);
 
                 if (gameData == null)
                 {
@@ -155,32 +143,27 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                Player player = null!;
-
                 var normalizeUrlLeague = _urlService.NormalizeUrl(leagueUrl);
                 var normalizeUrlPlayer = _urlService.NormalizeUrl(playerUrl);
 
-                var leagueParseData = await _parserListService.GetByUrl(normalizeUrlLeague);
+                var cachedPlayer = await _redisService.GetAsync("player:" + normalizeUrlPlayer);
 
-                if (leagueParseData == null)
+                if (cachedPlayer != null)
                 {
-                    return BadRequest(new { noParser = $"Лига по url {normalizeUrlLeague} не найдена" });
+                    var playerCached = JsonSerializer.Deserialize<Player>(cachedPlayer);
+                    return Ok(playerCached);
                 }
 
-                switch (leagueParseData.ParserType)
-                {
-                    case (int)ParserType.Soccer365:
-                        var leagueData = await _leaguesService.GetByUrl(leagueParseData.Url);
-                        player = await _soccer365parserService.ParsePlayerByPage(normalizeUrlPlayer, leagueData.Title);
-                        break;
-                }
+                League leagueData = await _leaguesService.GetByUrl(normalizeUrlLeague);
 
+                Player player = await _parserService.ParsePlayerByPage(normalizeUrlPlayer, leagueData.Title);
 
                 if (player == null)
                 {
                     return BadRequest(new { noParser = $"Не удалось получить игрока {playerUrl} из {leagueUrl}" });
                 }
 
+                await _redisService.SetAsync("player:" + normalizeUrlPlayer, JsonSerializer.Serialize(player), TimeSpan.FromDays(2));
                 return Ok(player);
             }
             catch (Exception e)

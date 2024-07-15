@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace cardscore_api.Models
 {
@@ -10,9 +11,6 @@ namespace cardscore_api.Models
         public string Name { get; set; } = null!;
         [Required]
         public string Text { get; set; } = null!;
-
-        public int LeagueId { get; set; }
-        public League League { get; set; }
         public bool Active { get; set; } = true;
     }
 }

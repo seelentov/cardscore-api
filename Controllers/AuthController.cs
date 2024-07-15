@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 
 namespace cardscore_api.Controllers
 {
@@ -22,13 +23,15 @@ namespace cardscore_api.Controllers
         private readonly JwtService _jwtService;
         private readonly UserNotificationOptionService _userNotificationOptionService;
         private readonly LeaguesService _leaguesService;
-        private readonly Soccer365ParserService _soccer365parserService;
         private readonly LeagueParseListService _parserListService;
         private readonly ErrorsService _errorsService;
         private readonly NotificationsService _notificationsService;
+        private readonly ParserService _parserService;
         private readonly UrlService _urlService;
+        private readonly RedisService _redisService;
+
         private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-4);
-        public AuthController(ILogger<AuthController> logger, UserService userService, BCryptService bCryptService, JwtService jwtService, UserNotificationOptionService userNotificationOptionService, LeaguesService leaguesService, Soccer365ParserService soccer365parserService, LeagueParseListService parserListService, ErrorsService errorsService, NotificationsService notificationsService, UrlService urlService)
+        public AuthController(ILogger<AuthController> logger, UserService userService, BCryptService bCryptService, JwtService jwtService, UserNotificationOptionService userNotificationOptionService, LeaguesService leaguesService, LeagueParseListService parserListService, ErrorsService errorsService, NotificationsService notificationsService, UrlService urlService, ParserService parserService, RedisService redisService)
         {
             _logger = logger;
             _userService = userService;
@@ -36,11 +39,12 @@ namespace cardscore_api.Controllers
             _jwtService = jwtService;
             _leaguesService = leaguesService;
             _userNotificationOptionService = userNotificationOptionService;
-            _soccer365parserService = soccer365parserService;
             _parserListService = parserListService;
             _errorsService = errorsService;
             _notificationsService = notificationsService;
             _urlService = urlService;
+            _parserService = parserService;
+            _redisService = redisService;
         }
 
         [HttpGet("me")]
@@ -92,8 +96,6 @@ namespace cardscore_api.Controllers
                     return Unauthorized(new { Message = "Пользователь не найден", userId });
                 }
 
-
-
                 await _userService.UpdateExpoNotification(user.Id, newToken);
 
                 return Ok();
@@ -142,8 +144,6 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                _logger.LogInformation("favorites!", LogLevel.Debug);
-
                 string userId = Request.Headers["UserId"].FirstOrDefault()?.Split(" ").Last();
 
                 if (userId == null)
@@ -161,7 +161,7 @@ namespace cardscore_api.Controllers
                 var userNotificators = await _userNotificationOptionService.GetOptionsByUserId(user.Id);
 
                 List<League> favoriteLeagues = await _leaguesService.GetManyByNames(userNotificators.Select(l => l.Name).ToList());
-                
+
                 return Ok(favoriteLeagues);
             }
             catch (Exception e)
@@ -176,7 +176,7 @@ namespace cardscore_api.Controllers
         {
             try
             {
-                DateTime? startDate = _startDate; 
+                DateTime? startDate = _startDate;
                 DateTime? endDate = null;
 
                 if (startDateString != null)
@@ -188,7 +188,6 @@ namespace cardscore_api.Controllers
                 {
                     endDate = DateTime.ParseExact(endDateString, "yyyy.MM.dd", CultureInfo.InvariantCulture).AddHours(23).AddMinutes(59).AddSeconds(59);
                 }
-
 
                 string userId = Request.Headers["UserId"].FirstOrDefault()?.Split(" ").Last();
 
@@ -212,30 +211,36 @@ namespace cardscore_api.Controllers
 
                 foreach (var favoriteLeague in favoriteLeagues)
                 {
-                    List<Game> games = null!;
-
-                    var leagueParseData = await _parserListService.GetByUrl(favoriteLeague.Url);
-
-                    switch (leagueParseData.ParserType)
+                    if (favoriteLeague == null)
                     {
-                        case (int)ParserType.Soccer365:
-                            games = await _soccer365parserService.GetGamesByUrl(leagueParseData.Url, favoriteLeague.Title, startDate, endDate);
-                            break;
+                        continue;
                     }
 
-                    if (games != null)
+                    List<Game> games = new();
+
+                    var cachedData = await _redisService.GetCachedDataByUrl(favoriteLeague.Url);
+
+                    if (cachedData == null)
                     {
-                        foreach (var game in games)
+                        games = await _parserService.GetGamesByUrl(favoriteLeague.Url, favoriteLeague.Title);
+                    }
+                    else
+                    {
+                        games = cachedData.Games;
+
+                    }
+
+                    foreach (var game in games)
+                    {
+                        GameWithLeague gameWithLeague = new()
                         {
-                            GameWithLeague gameWithLeague = new()
-                            {
-                                League = favoriteLeague,
-                                Game = game
-                            };
+                            League = favoriteLeague,
+                            Game = game
+                        };
 
-                            gamesWithLeague[game.Url] = gameWithLeague;
-                        }
+                        gamesWithLeague[game.Url] = gameWithLeague;
                     }
+
                 }
 
                 var resData = gamesWithLeague.Values.ToList();
@@ -341,7 +346,7 @@ namespace cardscore_api.Controllers
 
                 if (!uniquePhone)
                 {
-                    return BadRequest(new { Errors = new { Authorization = new string[] { "Вы уже зарегистрировали аккаунт ранее" } } } );
+                    return BadRequest(new { Errors = new { Authorization = new string[] { "Вы уже зарегистрировали аккаунт ранее" } } });
                 }
 
                 var userData = await _userService.Create(createUserDto);

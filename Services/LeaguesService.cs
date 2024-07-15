@@ -1,6 +1,7 @@
 ﻿using cardscore_api.Data;
 using cardscore_api.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace cardscore_api.Services
 {
@@ -10,13 +11,17 @@ namespace cardscore_api.Services
         private readonly LeagueParseListService _parserListService;
         private readonly Soccer365ParserService _soccer365parserService;
         private readonly ReglamentsService _reglamentsService;
+        private readonly ParserService _parserService;
+        private readonly RedisService _redisService;
 
-        public LeaguesService(DataContext context, LeagueParseListService parseListService, Soccer365ParserService soccer365ParserService, ReglamentsService reglamentsService)
+        public LeaguesService(DataContext context, LeagueParseListService parseListService, Soccer365ParserService soccer365ParserService, ReglamentsService reglamentsService, ParserService parserService, RedisService redisService)
         {
             _context = context;
             _parserListService = parseListService;
             _soccer365parserService = soccer365ParserService;
             _reglamentsService = reglamentsService;
+            _parserService = parserService;
+            _redisService = redisService;
         }
 
         public async Task<League> Create(League league)
@@ -64,6 +69,8 @@ namespace cardscore_api.Services
         public async Task Remove(int id)
         {
             var league = await Get(id);
+            var notificators = _context.UserNotificationOptions.Where(n => n.Name == league.Title).ToList() ;
+            _context.UserNotificationOptions.RemoveRange(notificators);
             _context.Leagues.Remove(league);
             _context.SaveChanges();
         }
@@ -98,17 +105,12 @@ namespace cardscore_api.Services
 
             foreach (var league in leagueParseDatas)
             {
-                League leagueData = null!;
-
                 if (existLeagues.Find(l => l.Url == league.Url) != null)
                 {
                     continue;
                 }
-                switch (league.ParserType)
-                {
-                    case (int)ParserType.Soccer365:
-                        leagueData = await _soccer365parserService.GetLeagueDataByUrl(league.Url); break;
-                }
+
+                League leagueData = await _parserService.GetLeagueDataByUrl(league.ParserType, league.Url);
 
                 if (leagueData == null)
                 {
@@ -117,11 +119,7 @@ namespace cardscore_api.Services
 
                 var reglamentFromData = await _reglamentsService.GetByName(leagueData.Title);
 
-                if (reglamentFromData != null)
-                {
-                    leagueData.Reglament = reglamentFromData;
-                }
-                else
+                if (reglamentFromData == null)
                 {
                     Reglament reglamentNew = new()
                     {
@@ -130,14 +128,11 @@ namespace cardscore_api.Services
                     };
 
                     await _context.AddAsync(reglamentNew);
-
-                    leagueData.Reglament = reglamentNew;
                 }
 
                 await _context.AddAsync(leagueData);
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
         }
     }
 }

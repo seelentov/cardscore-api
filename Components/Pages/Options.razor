@@ -1,0 +1,57 @@
+﻿@page "/options"
+
+@using System.Text.Json
+@using cardscore_api.Services
+@using cardscore_api.Models
+
+@rendermode InteractiveServer
+@inject BaseOptionsService BaseOptionSrv
+@inject IJSRuntime JsRuntime
+
+@using cardscore_api.Components.Layout
+<CheckAuth />
+
+<PageTitle>Настройки</PageTitle>
+
+<div class="main-header">
+    <h2>
+        Настройки
+    </h2>
+
+    <button class="button" @onclick="Save">
+        Сохранить
+    </button>
+</div>
+<form>
+    <label for="">
+        Длительность тестового периода (дни):
+        <div class="input"><input type="text" @bind-value="testDays"></div>
+    </label>
+</form>
+
+@code
+{
+    public int testDays;
+
+    protected override async Task OnInitializedAsync()
+    {
+        testDays = BaseOptionSrv.GetTestDays().Value;
+    }
+
+    async void Save()
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+            BaseOptionSrv.UpdateTestDays(testDays);
+            await JsRuntime.InvokeVoidAsync("alert", "Успешно!");
+
+        }
+        catch (Exception ex)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", JsonSerializer.Serialize(ex));
+        }
+        
+    }
+
+}

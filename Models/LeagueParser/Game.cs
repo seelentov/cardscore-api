@@ -3,7 +3,7 @@
 
     public class Game
     {
-
+        public string Id { get; set; } = null!;
         public Team[] Teams {  get; set; } = null!;
         public List<GameAction> Actions {  get; set; } = null!;
         public string Url { get; set; } = null!;

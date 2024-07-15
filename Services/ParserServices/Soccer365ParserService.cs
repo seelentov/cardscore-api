@@ -18,10 +18,13 @@ namespace cardscore_api.Services
         private readonly int _timeFix = -2;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly HtmlWeb _web;
+        private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-4);
 
+        private readonly FormatService _formatService;
 
-        public Soccer365ParserService(IServiceScopeFactory scopeFactory)
+        public Soccer365ParserService(IServiceScopeFactory scopeFactory, FormatService formatService)
         {
+            _formatService = formatService;
             _scopeFactory = scopeFactory;
             _web = new HtmlWeb();
             _web.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36";
@@ -99,12 +102,12 @@ namespace cardscore_api.Services
             List<Game> games = new();
             HashSet<string> gameUrls = new HashSet<string>();
 
-            
+
             var results = await ParsePage(url + "results/", name, startDateFilter, endDateFilter);
 
             var shedule = new List<Game>();
 
-            if(endDateFilter < DateTime.UtcNow.AddHours(_timeFix))
+            if (!(endDateFilter < DateTime.UtcNow.AddHours(_timeFix)))
             {
                 shedule = await ParsePage(url + "shedule/", name, startDateFilter, endDateFilter);
             }
@@ -132,11 +135,11 @@ namespace cardscore_api.Services
             return games;
         }
 
-        public async Task<List<Game>> GetActiveGamesByUrl(string url, string name)
+        public async Task<List<Game>> GetActiveGamesByUrl(string url, string name, bool parseActions = true)
         {
             List<Game> games = new();
 
-            var shedule = await ParsePageActive(url + "shedule/", name);
+            var shedule = await ParsePageActive(url + "shedule/", name, parseActions);
 
             games.AddRange(shedule);
 
@@ -145,9 +148,6 @@ namespace cardscore_api.Services
 
         public async Task<List<Game>> ParsePage(string url, string h1Element, DateTime? startDateFilter = null, DateTime? endDateFilter = null)
         {
-            
-            
-
             var doc = _web.Load(url);
 
             int refetchCounter = 0;
@@ -192,10 +192,6 @@ namespace cardscore_api.Services
 
         public async Task<LeagueIncludeGames> GetDataByUrl(string url, DateTime? startDateFilter = null, DateTime? endDateFilter = null)
         {
-            
-            
-
-
             var doc = _web.Load(url);
             int refetchCounter = 0;
 
@@ -242,7 +238,7 @@ namespace cardscore_api.Services
             return league;
         }
 
-        public async Task<List<Game>> ParsePageActive(string url, string h1Element)
+        public async Task<List<Game>> ParsePageActive(string url, string h1Element, bool parseActions = true)
         {
             var doc = _web.Load(url);
             int refetchCounter = 0;
@@ -276,7 +272,7 @@ namespace cardscore_api.Services
 
                 if (gameElem != null)
                 {
-                    game = await ParseGame(gameElem, h1Element, true, true);
+                    game = await ParseGame(gameElem, h1Element, parseActions, true);
                 }
 
                 if (game != null)
@@ -344,7 +340,7 @@ namespace cardscore_api.Services
                         break;
                     }
 
-                    var nameForPlayerPage = string.Join(" ", ClearString(leagueName).Split(" ")[0..^1]);
+                    var nameForPlayerPage = string.Join(" ", _formatService.ClearString(leagueName).Split(" ")[0..^1]);
 
                     string selector = nameForPlayerPage.Contains('\'') ? nameForPlayerPage.Split('\'')[1] : nameForPlayerPage;
 
@@ -364,7 +360,7 @@ namespace cardscore_api.Services
 
                         var dateElem = tableThisLeagueItem.SelectSingleNode(".//td");
 
-                        DateTime date = ParseDateTimeDDMMYYYY(ClearString(dateElem.LastChild.InnerHtml));
+                        DateTime date = _formatService.ParseDateTimeDDMMYYYY(_formatService.ClearString(dateElem.LastChild.InnerHtml));
 
                         if (league.StartDate > date || date > league.EndDate.AddHours(24))
                         {
@@ -379,15 +375,15 @@ namespace cardscore_api.Services
                         var playerRedCardsElem = tableThisLeagueItem.SelectSingleNode(".//td[9]");
                         var playerYellowRedCardsElem = tableThisLeagueItem.SelectSingleNode(".//td[8]");
 
-                        var isYellowCardExist = (playerYellowCardsElem != null && ClearString(playerYellowCardsElem.InnerText) != "&nbsp;");
-                        var isYellowRedCardExist = (playerYellowRedCardsElem != null && ClearString(playerYellowRedCardsElem.InnerText) != "&nbsp;");
+                        var isYellowCardExist = (playerYellowCardsElem != null && _formatService.ClearString(playerYellowCardsElem.InnerText) != "&nbsp;");
+                        var isYellowRedCardExist = (playerYellowRedCardsElem != null && _formatService.ClearString(playerYellowRedCardsElem.InnerText) != "&nbsp;");
 
                         if (isYellowRedCardExist) player.YellowRedCards++;
                         else if (isYellowCardExist) player.YellowCards++;
 
-                        if (playerGoalsElem != null) player.Goal += ToInt(playerGoalsElem.InnerText);
-                        if (playerAssistsElem != null) player.Assists += ToInt(playerAssistsElem.InnerText);
-                        if (playerRedCardsElem != null && ClearString(playerRedCardsElem.InnerText) != "&nbsp;") player.RedCards++;
+                        if (playerGoalsElem != null) player.Goal += _formatService.ToInt(playerGoalsElem.InnerText);
+                        if (playerAssistsElem != null) player.Assists += _formatService.ToInt(playerAssistsElem.InnerText);
+                        if (playerRedCardsElem != null && _formatService.ClearString(playerRedCardsElem.InnerText) != "&nbsp;") player.RedCards++;
                     }
                 }
             }
@@ -413,7 +409,7 @@ namespace cardscore_api.Services
             }
 
 
-            var nameForPlayerPage = string.Join(" ", ClearString(leagueName).Split(" ")[0..^1]);
+            var nameForPlayerPage = string.Join(" ", _formatService.ClearString(leagueName).Split(" ")[0..^1]);
 
             string selector = nameForPlayerPage.Contains('\'') ? nameForPlayerPage.Split('\'')[1] : nameForPlayerPage;
 
@@ -425,9 +421,9 @@ namespace cardscore_api.Services
 
             var playerPosElem = playerDoc.DocumentNode.SelectSingleNode("//tr[contains(., 'Позиция')]//td[not(@class)]");
 
-            player.Position = playerPosElem != null ? ClearString(playerPosElem.InnerHtml) : null;
+            player.Position = playerPosElem != null ? _formatService.ClearString(playerPosElem.InnerHtml) : null;
             player.ImageUrl = playerImageElem != null ? playerImageElem.Attributes["src"].Value : null!;
-            player.Name = playerNameElem != null ? ClearString(playerNameElem.InnerText) : null;
+            player.Name = playerNameElem != null ? _formatService.ClearString(playerNameElem.InnerText) : null;
 
             return player;
 
@@ -451,7 +447,7 @@ namespace cardscore_api.Services
                 playerDoc = _web.Load(url);
             }
 
-            var nameForPlayerPage = string.Join(" ", ClearString(leagueName).Split(" ")[0..^1]);
+            var nameForPlayerPage = string.Join(" ", _formatService.ClearString(leagueName).Split(" ")[0..^1]);
 
             string selector = nameForPlayerPage.Contains('\'') ? nameForPlayerPage.Split('\'')[1] : nameForPlayerPage;
 
@@ -470,12 +466,12 @@ namespace cardscore_api.Services
                 var playerYellowRedCardsElem = thisLeagueElem.SelectSingleNode(".//td[contains(@class, 'al_c')][10]");
                 var playerGameCountElem = thisLeagueElem.SelectSingleNode(".//td[contains(@class, 'al_c')][1]");
 
-                player.Goal = playerGoalsElem != null ? ToInt(playerGoalsElem.InnerHtml) : null;
-                player.Assists = playerAssistsElem != null ? ToInt(playerAssistsElem.InnerHtml) : null;
-                player.YellowCards = playerYellowCardsElem != null ? ToInt(playerYellowCardsElem.InnerHtml) : null;
-                player.RedCards = playerRedCardsElem != null ? ToInt(playerRedCardsElem.InnerHtml) : null;
-                player.YellowRedCards = playerYellowRedCardsElem != null ? ToInt(playerYellowRedCardsElem.InnerHtml) : null;
-                player.GameCount = playerGameCountElem != null ? ToInt(playerGameCountElem.InnerHtml) : null;
+                player.Goal = playerGoalsElem != null ? _formatService.ToInt(playerGoalsElem.InnerHtml) : null;
+                player.Assists = playerAssistsElem != null ? _formatService.ToInt(playerAssistsElem.InnerHtml) : null;
+                player.YellowCards = playerYellowCardsElem != null ? _formatService.ToInt(playerYellowCardsElem.InnerHtml) : null;
+                player.RedCards = playerRedCardsElem != null ? _formatService.ToInt(playerRedCardsElem.InnerHtml) : null;
+                player.YellowRedCards = playerYellowRedCardsElem != null ? _formatService.ToInt(playerYellowRedCardsElem.InnerHtml) : null;
+                player.GameCount = playerGameCountElem != null ? _formatService.ToInt(playerGameCountElem.InnerHtml) : null;
             }
 
             var playerPosElem = playerDoc.DocumentNode.SelectSingleNode("//tr[contains(., 'Позиция')]//td[not(@class)]");
@@ -485,9 +481,9 @@ namespace cardscore_api.Services
                 playerPosElem = playerDoc.DocumentNode.SelectSingleNode("//tr[contains(., 'Position')]//td[not(@class)]");
             }
 
-            player.Position = playerPosElem != null ? ClearString(playerPosElem.InnerHtml) : null;
+            player.Position = playerPosElem != null ? _formatService.ClearString(playerPosElem.InnerHtml) : null;
             player.ImageUrl = playerImageElem != null ? playerImageElem.Attributes["src"].Value : null!;
-            player.Name = playerNameElem != null ? ClearString(playerNameElem.InnerText) : null;
+            player.Name = playerNameElem != null ? _formatService.ClearString(playerNameElem.InnerText) : null;
 
             return player;
         }
@@ -533,15 +529,15 @@ namespace cardscore_api.Services
 
             Team team1 = new()
             {
-                Name = team1Name != null ? ClearString(team1Name.InnerText) : null,
+                Name = team1Name != null ? _formatService.ClearString(team1Name.InnerText) : null,
                 IconUrl = team1IconUrl != null ? team1IconUrl.Attributes["src"].Value : null,
-                Count = team1Count != null ? ToInt(team1Count.InnerHtml) : null,
+                Count = team1Count != null ? _formatService.ToInt(team1Count.InnerHtml) : null,
             };
             Team team2 = new()
             {
-                Name = team2Name != null ? ClearString(team2Name.InnerText) : null,
+                Name = team2Name != null ? _formatService.ClearString(team2Name.InnerText) : null,
                 IconUrl = team2IconUrl != null ? team2IconUrl.Attributes["src"].Value : null,
-                Count = team2Count != null ? ToInt(team2Count.InnerHtml) : null,
+                Count = team2Count != null ? _formatService.ToInt(team2Count.InnerHtml) : null,
             };
 
             Team[] teams = new[]
@@ -565,10 +561,10 @@ namespace cardscore_api.Services
 
             var liveStatusElem = gameDoc.DocumentNode.SelectSingleNode("//div[contains(@class, 'live_game_status')]/b");
 
-            if(liveStatusElem != null && (liveStatusElem.InnerHtml.Contains("мин") || liveStatusElem.InnerHtml.Contains("Перерыв") || liveStatusElem.InnerHtml.Contains("Break")))
+            if (liveStatusElem != null && (liveStatusElem.InnerHtml.Contains("мин") || liveStatusElem.InnerHtml.Contains("Перерыв") || liveStatusElem.InnerHtml.Contains("Break")))
             {
                 game.ActiveGame = true;
-                game.GameTime = ClearString(liveStatusElem.InnerHtml);
+                game.GameTime = _formatService.ClearString(liveStatusElem.InnerHtml);
             }
 
             else if (liveStatusElem != null && (liveStatusElem.InnerHtml.Contains("Завершен") || liveStatusElem.InnerHtml.Contains("Finished")))
@@ -592,9 +588,7 @@ namespace cardscore_api.Services
         {
             List<GameAction> actions = new List<GameAction>();
 
-            
-                return actions;
-           
+            return actions;
         }
 
         public async Task<List<GameAction>> ParseActions(HtmlNodeCollection actionsElems, string leagueName, HtmlDocument gameDoc, Team[] teams, bool isActive)
@@ -607,7 +601,7 @@ namespace cardscore_api.Services
                 foreach (var actionElem in actionsElems.ToList())
                 {
                     var eventAt = actionElem.SelectSingleNode(".//div[contains(@class, 'event_at')]");
-                    bool leftTeam = eventAt != null ? ClearString(eventAt.InnerText) == "" : false;
+                    bool leftTeam = eventAt != null ? _formatService.ClearString(eventAt.InnerText) == "" : false;
 
                     var actionIconElem = leftTeam ? actionElem.SelectSingleNode(".//div[contains(@class, 'event_ht_icon')]") : actionElem.SelectSingleNode(".//div[contains(@class, 'event_at_icon')]");
                     var actionIcon = actionIconElem != null ? actionIconElem.GetClasses().ToList()[1] : null;
@@ -632,6 +626,7 @@ namespace cardscore_api.Services
 
                     var playerElem = actionElem.SelectSingleNode(".//a");
 
+
                     string playerLink = null!;
 
 
@@ -647,7 +642,13 @@ namespace cardscore_api.Services
 
                     var player = new Player();
 
-                    player.Name = playerElem != null ? ClearString(playerElem.InnerText) : null;
+                    player.Name = playerElem != null ? _formatService.ClearString(playerElem.InnerText) : null;
+
+                    if (player.Name == "нет данных")
+                    {
+                        continue;
+                    }
+
                     player.Url = playerLink;
 
                     if (playerLink != null)
@@ -669,7 +670,7 @@ namespace cardscore_api.Services
                         if (lineUpPlayerElem != null)
                         {
                             player.Url = lineUpPlayerElem.Attributes["href"].Value;
-                            player.DoubleParse = true;
+
                             if (isActive)
                             {
                                 player = await ParsePlayerByPage(_domain + player.Url, leagueName);
@@ -683,13 +684,18 @@ namespace cardscore_api.Services
 
                     var actionView = new GameAction()
                     {
-                        Time = actionTime != null ? ClearString(actionTime.InnerHtml) : null,
+                        Time = actionTime != null ? _formatService.ClearString(actionTime.InnerHtml) : null,
                         LeftTeam = leftTeam,
                         ActionType = actionType != null ? actionType : null,
                         Player = player,
                     };
 
-                    actions.Add(actionView);
+                    var isDublicate = actions.Find(a => a.Player.Name == actionView.Player.Name && a.ActionType == actionView.ActionType);
+
+                    if (isDublicate == null)
+                    {
+                        actions.Add(actionView);
+                    }
                 }
             };
 
@@ -700,7 +706,7 @@ namespace cardscore_api.Services
                 var action = actions[i];
                 var player = action.Player;
 
-                if (!player.DoubleParse)
+                if (player.Url == null)
                 {
                     continue;
                 }
@@ -714,83 +720,100 @@ namespace cardscore_api.Services
 
             actions.AddRange(switches);
 
-            actions.Sort((a, b) => ToInt(a.Time).CompareTo(ToInt(b.Time)));
+            actions.Sort((a, b) => _formatService.ToInt(a.Time).CompareTo(_formatService.ToInt(b.Time)));
 
             return actions;
         }
 
         public async Task<Player> CheckActionsByPlayerPage(List<GameAction> gameActions, Player player, string leagueName, Team[] teams)
         {
-            var newPlayer = new Player()
-            {
-                Name = player.Name,
-                Url = player.Url,
-                YellowCards = player.YellowCards,
-                ImageUrl = player.ImageUrl,
-                GameCount = player.GameCount,
-                Goal = player.Goal,
-                Assists = player.Assists,
-                RedCards = player.RedCards,
-                YellowRedCards = player.YellowRedCards,
-                Position = player.Position,
-            };
-
-            
-            
-
-
-
-            string tabLastGames = "&tab=last_games";
-
-            var tabPlayerDoc = _web.Load(player.Url + tabLastGames);
-
-            int refetchCounter = 0;
-
-            while (tabPlayerDoc.ParsedText.Contains("503 Service Temporarily Unavailable") && refetchCounter < 20)
-            {
-                refetchCounter++;
-                await Task.Delay(100);
-                tabPlayerDoc = _web.Load(player.Url + tabLastGames);
-            }
-
-            var table = tabPlayerDoc.DocumentNode.SelectSingleNode("//table[contains(@class, 'tablesorter')]");
-
-            var nameForPlayerPage = string.Join(" ", ClearString(leagueName).Split(" ")[0..^1]);
-
-            string selector = nameForPlayerPage.Contains('\'') ? nameForPlayerPage.Split('\'')[1] : nameForPlayerPage;
-
-            var tableThisGameItem = table.SelectSingleNode($".//tr[contains(., '{selector}') and contains(., '{teams[0].Name}') and contains(., '{teams[1].Name}')]");
-
-            var playerYellowCardsElem = tableThisGameItem.SelectSingleNode(".//td[7]");
-            var playerRedCardsElem = tableThisGameItem.SelectSingleNode(".//td[9]");
-            var playerYellowRedCardsElem = tableThisGameItem.SelectSingleNode(".//td[8]");
-
-            var isYellowCardExist = (playerYellowCardsElem != null && ClearString(playerYellowCardsElem.InnerText) != "&nbsp;");
-            var isYellowRedCardExist = (playerYellowRedCardsElem != null && ClearString(playerYellowRedCardsElem.InnerText) != "&nbsp;");
-            var isRedCardExist = (playerRedCardsElem != null && ClearString(playerRedCardsElem.InnerText) != "&nbsp;");
-            
-
-            foreach (var action in gameActions)
-            {
-                switch(action.ActionType)
+                var newPlayer = new Player()
                 {
-                    case (GameActionType.YellowCard):
-                        if (!isYellowCardExist) newPlayer.YellowCards++;
-                        break;
-                    case (GameActionType.YellowRedCard):
-                        if (!isYellowRedCardExist)
-                        {
-                            newPlayer.YellowRedCards++;
-                            newPlayer.YellowCards--;
-                        }
-                        break;
-                    case (GameActionType.RedCard):
-                        if(!isRedCardExist) newPlayer.RedCards++;
-                        break;
-                }
-            }
+                    Name = player.Name,
+                    Url = player.Url,
+                    YellowCards = player.YellowCards,
+                    ImageUrl = player.ImageUrl,
+                    GameCount = player.GameCount,
+                    Goal = player.Goal,
+                    Assists = player.Assists,
+                    RedCards = player.RedCards,
+                    YellowRedCards = player.YellowRedCards,
+                    Position = player.Position,
+                };
 
-            return newPlayer;
+                string tabLastGames = "&tab=last_games";
+
+                var tabPlayerDoc = _web.Load(player.Url + tabLastGames);
+
+                int refetchCounter = 0;
+
+                while (tabPlayerDoc.ParsedText.Contains("503 Service Temporarily Unavailable") && refetchCounter < 20)
+                {
+                    refetchCounter++;
+                    await Task.Delay(100);
+                    tabPlayerDoc = _web.Load(player.Url + tabLastGames);
+                }
+
+                var table = tabPlayerDoc.DocumentNode.SelectSingleNode("//table[contains(@class, 'tablesorter')]");
+
+                var nameForPlayerPage = string.Join(" ", _formatService.ClearString(leagueName).Split(" ")[0..^1]);
+
+                string selector = nameForPlayerPage.Contains('\'') ? nameForPlayerPage.Split('\'')[1] : nameForPlayerPage;
+
+                var tableThisGameItem = table.SelectSingleNode($".//tr[contains(., '{selector}') and contains(., '{teams[0].Name}') and contains(., '{teams[1].Name}')]");
+
+                if (tableThisGameItem == null)
+                {
+                    foreach (var action in gameActions)
+                    {
+                        switch (action.ActionType)
+                        {
+                            case (GameActionType.YellowCard):
+                                newPlayer.YellowCards++;
+                                break;
+                            case (GameActionType.YellowRedCard):
+                                newPlayer.YellowRedCards++;
+                                newPlayer.YellowCards--;
+                                break;
+                            case (GameActionType.RedCard):
+                                newPlayer.RedCards++;
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    var playerYellowCardsElem = tableThisGameItem.SelectSingleNode(".//td[7]");
+                    var playerRedCardsElem = tableThisGameItem.SelectSingleNode(".//td[9]");
+                    var playerYellowRedCardsElem = tableThisGameItem.SelectSingleNode(".//td[8]");
+
+                    var isYellowCardExist = (playerYellowCardsElem != null && _formatService.ClearString(playerYellowCardsElem.InnerText) != "&nbsp;");
+                    var isYellowRedCardExist = (playerYellowRedCardsElem != null && _formatService.ClearString(playerYellowRedCardsElem.InnerText) != "&nbsp;");
+                    var isRedCardExist = (playerRedCardsElem != null && _formatService.ClearString(playerRedCardsElem.InnerText) != "&nbsp;");
+
+
+                    foreach (var action in gameActions)
+                    {
+                        switch (action.ActionType)
+                        {
+                            case (GameActionType.YellowCard):
+                                if (!isYellowCardExist) newPlayer.YellowCards++;
+                                break;
+                            case (GameActionType.YellowRedCard):
+                                if (!isYellowRedCardExist)
+                                {
+                                    newPlayer.YellowRedCards++;
+                                    newPlayer.YellowCards--;
+                                }
+                                break;
+                            case (GameActionType.RedCard):
+                                if (!isRedCardExist) newPlayer.RedCards++;
+                                break;
+                        }
+                    }
+                }
+
+                return newPlayer;
         }
 
         public async Task<Game> ParseGame(HtmlNode htmlNode, string leagueName, bool parseActions = true, bool onlyActive = false, DateTime? startDateFilter = null, DateTime? endDateFilter = null)
@@ -804,8 +827,8 @@ namespace cardscore_api.Services
 
             string url = htmlNode.SelectSingleNode(".//a").Attributes["href"].Value;
 
-            DateTime dateTime = dateElem != null && CanParseDDMM(ClearString(dateElem.InnerHtml)) ? ParseDateTimeDDMM(ClearString(dateElem.InnerHtml)).AddHours(_timeFix) :
-                CanParseDDMMYY(ClearString(dateElem.InnerHtml)) ? ParseDateTimeDDMMYY(ClearString(dateElem.InnerHtml)).AddHours(_timeFix) :
+            DateTime dateTime = dateElem != null && _formatService.CanParseDDMM(_formatService.ClearString(dateElem.InnerHtml)) ? _formatService.ParseDateTimeDDMM(_formatService.ClearString(dateElem.InnerHtml)).AddHours(_timeFix) :
+                _formatService.CanParseDDMMYY(_formatService.ClearString(dateElem.InnerHtml)) ? _formatService.ParseDateTimeDDMMYY(_formatService.ClearString(dateElem.InnerHtml)).AddHours(_timeFix) :
                 startDateFilter != null || endDateFilter != null ? DateTime.Today.AddHours(1) :
                 await ParseDateFromPage(_domain + url);
 
@@ -845,15 +868,15 @@ namespace cardscore_api.Services
 
             Team team1 = new()
             {
-                Name = team1Name != null ? ClearString(team1Name.InnerText) : null,
+                Name = team1Name != null ? _formatService.ClearString(team1Name.InnerText) : null,
                 IconUrl = team1IconUrl != null ? team1IconUrl.Attributes["src"].Value : null,
-                Count = team1Count != null ? ToInt(team1Count.InnerHtml) : null,
+                Count = team1Count != null ? _formatService.ToInt(team1Count.InnerHtml) : null,
             };
             Team team2 = new()
             {
-                Name = team2Name != null ? ClearString(team2Name.InnerText) : null,
+                Name = team2Name != null ? _formatService.ClearString(team2Name.InnerText) : null,
                 IconUrl = team2IconUrl != null ? team2IconUrl.Attributes["src"].Value : null,
-                Count = team2Count != null ? ToInt(team2Count.InnerHtml) : null,
+                Count = team2Count != null ? _formatService.ToInt(team2Count.InnerHtml) : null,
             };
 
             Team[] teams = new[]
@@ -865,7 +888,7 @@ namespace cardscore_api.Services
             {
                 Teams = teams,
 
-                DateTime = await DateTimeRounding(dateTime),
+                DateTime = await _formatService.DateTimeRounding(dateTime),
 
                 Url = _domain + url
             };
@@ -873,13 +896,13 @@ namespace cardscore_api.Services
             if (dateElem != null && dateElem.InnerHtml.Contains("'"))
             {
                 game.ActiveGame = true;
-                game.GameTime = ClearString(dateElem.InnerHtml);
+                game.GameTime = _formatService.ClearString(dateElem.InnerHtml);
             }
 
-            else if (dateElem != null && Regex.IsMatch(ClearString(dateElem.InnerHtml), @"^\d\d:\d\d$"))
+            else if (dateElem != null && Regex.IsMatch(_formatService.ClearString(dateElem.InnerHtml), @"^\d\d:\d\d$"))
             {
                 game.IsToday = true;
-                game.GameTime = SubtractTime(ClearString(dateElem.InnerHtml), -_timeFix);
+                game.GameTime = _formatService.SubtractTime(_formatService.ClearString(dateElem.InnerHtml), -_timeFix);
             }
 
             else if (dateElem != null && (dateElem.InnerHtml.Contains("Завершен") || dateElem.InnerHtml.Contains("Finished")))
@@ -890,24 +913,24 @@ namespace cardscore_api.Services
             else if (dateElem != null && (dateElem.InnerHtml.Contains("Перерыв") || dateElem.InnerHtml.Contains("Break")))
             {
                 game.ActiveGame = true;
-                game.GameTime = ClearString(dateElem.InnerHtml);
+                game.GameTime = _formatService.ClearString(dateElem.InnerHtml);
             }
 
             else if (dateElem != null && (dateElem.InnerHtml.Contains("Перенесен") || dateElem.InnerHtml.Contains("Postponed")))
             {
-                game.DateTime = ParseDateTimeDDMM(ClearString(dateElem.SelectSingleNode(".//span").InnerHtml)).AddHours(_timeFix);
+                game.DateTime = _formatService.ParseDateTimeDDMM(_formatService.ClearString(dateElem.SelectSingleNode(".//span").InnerHtml)).AddHours(_timeFix);
             }
 
             else if (dateElem != null && (dateElem.InnerHtml.Contains("Остановлен") || dateElem.InnerHtml.Contains("Stopped")))
             {
                 game.IsStopped = true;
-                game.GameTime = ClearString(dateElem.InnerHtml);
+                game.GameTime = _formatService.ClearString(dateElem.InnerHtml);
             }
 
             if (parseActions && url != null)
             {
-                
-                
+
+
 
                 var gameDoc = _web.Load(_domain + url);
 
@@ -936,7 +959,7 @@ namespace cardscore_api.Services
 
             DateTime dateTime = DateTime.UtcNow.AddHours(3);
 
-            var dateString = dateElem != null ? ClearString(dateElem.InnerHtml).Split(", ").Last() : null;
+            var dateString = dateElem != null ? _formatService.ClearString(dateElem.InnerHtml).Split(", ").Last() : null;
 
             if (dateString != null && !dateString.Contains(":"))
             {
@@ -944,7 +967,7 @@ namespace cardscore_api.Services
 
                 if (liveGameElem != null)
                 {
-                    dateTime = DateTime.UtcNow.AddHours(3).AddMinutes(-ToInt(liveGameElem.InnerHtml));
+                    dateTime = DateTime.UtcNow.AddHours(3).AddMinutes(-_formatService.ToInt(liveGameElem.InnerHtml));
                 }
 
             }
@@ -952,12 +975,12 @@ namespace cardscore_api.Services
             {
                 if (dateString != null)
                 {
-                    dateTime = TryParseDateTime(dateString) ? ParseDateTime(ClearString(dateString)).AddHours(_timeFix) : DateTime.UtcNow.AddHours(3);
+                    dateTime = _formatService.TryParseDateTime(dateString) ? _formatService.ParseDateTime(_formatService.ClearString(dateString)).AddHours(_timeFix) : DateTime.UtcNow.AddHours(3);
                 }
             }
 
 
-            return await DateTimeRounding(dateTime);
+            return await _formatService.DateTimeRounding(dateTime);
         }
 
         public async Task<DateTime> ParseDateFromPage(string url)
@@ -978,7 +1001,7 @@ namespace cardscore_api.Services
 
             DateTime dateTime = DateTime.UtcNow.AddHours(3);
 
-            var dateString = dateElem != null ? ClearString(dateElem.InnerHtml).Split(", ").Last() : null;
+            var dateString = dateElem != null ? _formatService.ClearString(dateElem.InnerHtml).Split(", ").Last() : null;
 
             if (dateString != null && !dateString.Contains(":"))
             {
@@ -986,7 +1009,7 @@ namespace cardscore_api.Services
 
                 if (liveGameElem != null)
                 {
-                    dateTime = DateTime.UtcNow.AddHours(3).AddMinutes(-ToInt(liveGameElem.InnerHtml));
+                    dateTime = DateTime.UtcNow.AddHours(3).AddMinutes(-_formatService.ToInt(liveGameElem.InnerHtml));
                 }
 
             }
@@ -994,133 +1017,13 @@ namespace cardscore_api.Services
             {
                 if (dateString != null)
                 {
-                    dateTime = TryParseDateTime(dateString) ? ParseDateTime(ClearString(dateString)).AddHours(_timeFix) : DateTime.UtcNow.AddHours(3);
+                    dateTime = _formatService.TryParseDateTime(dateString) ? _formatService.ParseDateTime(_formatService.ClearString(dateString)).AddHours(_timeFix) : DateTime.UtcNow.AddHours(3);
                 }
             }
 
 
-            return await DateTimeRounding(dateTime);
+            return await _formatService.DateTimeRounding(dateTime);
         }
 
-        public async Task<DateTime> DateTimeRounding(DateTime dateTime)
-        {
-            int minutes = dateTime.Minute;
-
-            if (minutes.ToString().EndsWith("9"))
-            {
-                return dateTime.AddMinutes(1);
-            }
-            else if (minutes.ToString().EndsWith("1"))
-            {
-                return dateTime.AddMinutes(-1);
-            }
-            return dateTime;
-
-        }
-
-
-        public bool CanParseDDMM(string dateString)
-        {
-            try
-            {
-                ParseDateTimeDDMM(dateString);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public bool CanParseDDMMYY(string dateString)
-        {
-            try
-            {
-                ParseDateTimeDDMMYY(dateString);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-
-        public static string SubtractTime(string timeString, int hours, int minutes = 0)
-        {
-            TimeSpan timeSpan = TimeSpan.Parse(timeString);
-
-            TimeSpan newTimeSpan = timeSpan.Subtract(new TimeSpan(hours, minutes, 0));
-
-            return newTimeSpan.ToString(@"hh\:mm");
-        }
-
-        public DateTime ParseDateTimeDDMM(string input)
-        {
-
-            const string format = "dd.MM, HH:mm";
-
-            return DateTime.ParseExact(input, format, CultureInfo.InvariantCulture);
-        }
-
-        public DateTime ParseDateTimeDDMMYY(string input)
-        {
-            const string format = "dd.MM.yy, HH:mm";
-
-            return DateTime.ParseExact(input, format, CultureInfo.InvariantCulture);
-        }
-
-        public DateTime ParseDateTimeDDMMYYYY(string input)
-        {
-            const string format = "dd.MM.yyyy";
-
-            return DateTime.ParseExact(input, format, CultureInfo.InvariantCulture);
-        }
-
-
-
-        public bool TryParseDateTime(string dateString)
-        {
-            try
-            {
-                ParseDateTime(dateString);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public DateTime ParseDateTime(string input)
-        {
-            string[] parts = input.Split(',');
-            string datePart = parts[parts.Length - 1].Trim();
-
-            const string format1 = "dd.MM.yyyy HH:mm";
-            const string format2 = "dd.MM.yyyy";
-
-            if (datePart.Contains(':'))
-            {
-                return DateTime.ParseExact(datePart, format1, CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                return DateTime.ParseExact(datePart, format2, CultureInfo.InvariantCulture);
-            }
-        }
-
-        public string ClearString(string str)
-        {
-            var clearedStr = str.Replace("\n", string.Empty).Replace("\t", string.Empty);
-            return Regex.Replace(clearedStr, "<.*?>", string.Empty);
-        }
-
-        public int ToInt(string str)
-        {
-            int result;
-            int.TryParse(string.Join("", str.Where(c => char.IsDigit(c))), out result);
-            return result;
-        }
     }
 }

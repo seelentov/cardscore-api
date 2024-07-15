@@ -22,7 +22,7 @@ namespace cardscore_api.Services
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     await CreateBackupAsync();
-                    await Task.Delay(TimeSpan.FromHours(24), cancellationToken);
+                    await Task.Delay(TimeSpan.FromDays(3), cancellationToken);
                 }
             }, cancellationToken);
 
@@ -50,7 +50,7 @@ namespace cardscore_api.Services
 
                 var backupFiles = Directory.EnumerateFiles(_backupPath, "*.db");
 
-                if (backupFiles.Count() >= 31)
+                if (backupFiles.Count() >= 10)
                 {
                     var latestBackupFile = backupFiles.OrderByDescending(f => f).Last();
                     File.Delete(latestBackupFile);

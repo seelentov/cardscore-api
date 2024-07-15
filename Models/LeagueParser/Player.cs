@@ -12,7 +12,7 @@
         public int? GameCount {  get; set; } = null!;
         public string ImageUrl { get; set; } = null!;
         public string Url {  get; set; } = null!;
-        public bool DoubleParse {  get; set; } = false;
+        public bool Empty {  get; set; } = false;
 
     }
 }

@@ -17,6 +17,8 @@ namespace cardscore_api.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserNotificationOption> UserNotificationOptions { get; set; }
         public DbSet<CachedNotification> CachedNotifications { get; set; }
+        public DbSet<BaseOption> BaseOptions { get; set; }
+        
         public string DbPath { get; }
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
@@ -25,10 +27,7 @@ namespace cardscore_api.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<League>()
-                .HasOne(l => l.Reglament)
-                .WithOne(r => r.League)
-                .HasForeignKey<League>(r => r.ReglamentId);
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

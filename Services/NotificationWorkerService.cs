@@ -1,9 +1,9 @@
 ﻿using cardscore_api.Data;
 using cardscore_api.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Firefox;
 using System.Text.Json;
-using static System.Collections.Specialized.BitVector32;
 
 namespace cardscore_api.Services
 {
@@ -13,14 +13,39 @@ namespace cardscore_api.Services
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ErrorsService _errorsService;
         private readonly ExpoNotificationsService _expoNotificationsService;
+        private readonly ILogger<NotificationWorkerService> _logger;
         private readonly int _timeFix = -2;
-        private readonly int _delay = 180000;
-        public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService)
+        private readonly FirefoxOptions _driverOptions;
+        private readonly FirefoxDriver _driver;
+
+        public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService, ILogger<NotificationWorkerService> logger)
         {
             _soccer365ParserService = soccer365ParserService;
             _scopeFactory = scopeFactory;
             _errorsService = errorsService;
             _expoNotificationsService = expoNotificationsService;
+            _logger = logger;
+
+            _logger = logger;
+
+            FirefoxProfile profile = new FirefoxProfile();
+            profile.SetPreference("browser.cache.disk.enable", false);
+            profile.SetPreference("browser.cache.memory.enable", false);
+            profile.SetPreference("browser.cache.offline.enable", false);
+            profile.SetPreference("network.http.use-cache", false);
+            profile.SetPreference("extensions.enabled", false);
+            profile.SetPreference("browser.privatebrowsing.autostart", true);
+            profile.SetPreference("permissions.default.stylesheet", 2);
+            profile.SetPreference("permissions.default.image", 2);
+
+            _driverOptions = new FirefoxOptions();
+            _driverOptions.Profile = profile;
+            _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
+            _driverOptions.AddArgument("--headless");
+
+            _driverOptions.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0");
+
+            _driver = new FirefoxDriver(_driverOptions);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -35,6 +60,7 @@ namespace cardscore_api.Services
                         using (var scope = _scopeFactory.CreateScope())
                         {
                             var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+                            var _redisService = scope.ServiceProvider.GetRequiredService<RedisService>();
 
                             var oldCacheNotifications = _dataContext.CachedNotifications.Where(c => c.DateTime < DateTime.UtcNow.AddDays(-2)).ToList();
 
@@ -44,18 +70,71 @@ namespace cardscore_api.Services
                                 _dataContext.SaveChanges();
                             }
 
-                            var notificators = await _dataContext.UserNotificationOptions.ToListAsync();
+                            var oldNotifications = _dataContext.Notifications.Where(c => c.DateTime < DateTime.UtcNow.AddDays(-10)).ToList();
 
-                            foreach (var option in notificators)
+                            if (oldNotifications != null && oldNotifications.Count > 0)
                             {
-                                var activeGames = await GetDataByNotificator(option);
+                                _dataContext.Notifications.RemoveRange(oldNotifications);
+                                _dataContext.SaveChanges();
+                            }
 
-                                if (activeGames == null || activeGames.Count < 1)
+                            var leagues = await _dataContext.Leagues.ToListAsync();
+                            foreach (var league in leagues)
+                            {
+
+                                if (league.NearestGame > DateTime.UtcNow)
                                 {
                                     continue;
                                 }
 
-                                var league = await GetLeagueByNotificator(option);
+                                _logger.LogInformation("CheckLeague: " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
+
+                                var activeGames = await GetActiveGames(league.Url, league.Title);
+
+                                if (activeGames != null && activeGames.Count > 0)
+                                {
+                                    try
+                                    {
+                                        await _redisService.UpdateLeagueAsync(league.Url, JsonSerializer.Serialize(activeGames));
+                                        _logger.LogInformation("SavedActive: " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogInformation("Error SavedActive: " + league.Title + " " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Information);
+                                    }
+                                }
+                                
+                                if (activeGames == null || activeGames.Count < 1)
+                                {
+                                    var leagueData = await _redisService.GetCachedDataByUrl(league.Url);
+
+                                    if (leagueData != null)
+                                    {
+                                        var sortedGames = leagueData.Games.OrderBy(game => game.DateTime).ToList();
+                                        var nearestGame = sortedGames.FirstOrDefault(game => game.DateTime >= DateTime.UtcNow);
+
+                                        if (nearestGame != null)
+                                        {
+                                            league.NearestGame = nearestGame.DateTime;
+                                        }
+                                        else
+                                        {
+                                            league.NearestGame = DateTime.UtcNow.AddHours(12);
+                                            _logger.LogInformation("Empty: " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        league.NearestGame = DateTime.UtcNow.AddHours(12);
+                                        _logger.LogInformation("Empty: " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
+                                    };
+
+                                    _dataContext.SaveChanges();
+
+                                    continue;
+                                }
+
+                                var options = _dataContext.UserNotificationOptions.Where(n => n.Name == league.Title).ToList();
 
                                 foreach (var game in activeGames)
                                 {
@@ -68,54 +147,62 @@ namespace cardscore_api.Services
                                                 continue;
                                             }
 
-                                            var key = game.Teams[0].Name + game.Teams[1].Name + action.Time + action.Player.Name + action.ActionType.ToString() + option.UserId;
-
-                                            if (_dataContext.CachedNotifications.Where(c => c.Key == key).ToList().Count > 0)
+                                            foreach (var option in options)
                                             {
-                                                continue;
-                                            }
-                                            else
-                                            {
-                                                _dataContext.CachedNotifications.Add(new CachedNotification(key));
-                                                _dataContext.SaveChanges();
-                                            }
+                                                var key = (game.Id + game.Teams[0].Name + game.Teams[1].Name + action.Player.Name + action.ActionType.ToString() + option.UserId).ToLower();
 
-                                            var isYellowCard = action.ActionType == GameActionType.YellowCard;
+                                                _logger.LogInformation("Check Key: " + key, Microsoft.Extensions.Logging.LogLevel.Information);
 
-                                            var haveCardCount = action.Player.YellowCards != null;
-
-                                            var isCriticalYellowCard = haveCardCount &&
-                                                   ((action.Player.YellowCards + (action.Player.YellowRedCards * 2)) == option.CardCount) ||
-                                                   ((action.Player.YellowCards + (action.Player.YellowRedCards * 2)) == option.CardCountTwo) ||
-                                                   ((action.Player.YellowCards + (action.Player.YellowRedCards * 2)) == option.CardCountThree);
-
-                                            int? criticalYellowCardCount = isCriticalYellowCard ?
-                                            (((action.Player.YellowCards + (action.Player.YellowRedCards * 2)) == option.CardCount) ? 1 :
-                                            ((action.Player.YellowCards + (action.Player.YellowRedCards * 2)) == option.CardCountTwo) ? 2 :
-                                                    3) : null!;
-
-                                            var isCreateNotif = isCriticalYellowCard || !isYellowCard;
-
-                                            if (isCreateNotif)
-                                            {
-                                                if (option.Active)
+                                                if (_dataContext.CachedNotifications.Where(c => c.Key == key).ToList().Count > 0)
                                                 {
-                                                    await ThrowNotification(game, action, option.UserId, league, criticalYellowCardCount);
+                                                    continue;
                                                 }
 
-                                                await CreateNotificator(game, action, option.UserId);
+                                                else
+                                                {
+                                                    _dataContext.CachedNotifications.Add(new CachedNotification(key));
+                                                    _dataContext.SaveChanges();
+                                                }
+
+                                                var isYellowCard = action.ActionType == GameActionType.YellowCard;
+
+                                                var haveCardCount = action.Player.YellowCards != null;
+
+                                                var isCriticalYellowCard = haveCardCount &&
+                                                       ((action.Player.YellowCards) == option.CardCount) ||
+                                                       ((action.Player.YellowCards) == option.CardCountTwo) ||
+                                                       ((action.Player.YellowCards) == option.CardCountThree);
+
+                                                int? criticalYellowCardCount = isCriticalYellowCard ?
+                                                (((action.Player.YellowCards) == option.CardCount) ? 1 :
+                                                ((action.Player.YellowCards) == option.CardCountTwo) ? 2 :
+                                                        3) : null!;
+
+                                                var isCreateNotif = isCriticalYellowCard || !isYellowCard;
+
+                                                if (isCreateNotif)
+                                                {
+                                                    if (option.Active)
+                                                    {
+                                                        await ThrowNotification(game, action, option.UserId, league, criticalYellowCardCount);
+                                                        _logger.LogInformation("\n\nThrowNotification: " + option.UserId + ", " + key + "\n\n", Microsoft.Extensions.Logging.LogLevel.Information);
+                                                    }
+
+                                                    await CreateNotificator(game, action, option.UserId);
+                                                    _logger.LogInformation("\n\nCreateNotificator: " + option.UserId + ", " + key + "\n\n", Microsoft.Extensions.Logging.LogLevel.Information);
+                                                }
+
                                             }
                                         }
                                     }
                                 }
-                                await Task.Delay(60000);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
+                        _driver.Navigate().Refresh();
                         _errorsService.CreateErrorFile(ex);
-                        Console.WriteLine(ex.Message);
                     }
                 }
             }, cancellationToken);
@@ -124,8 +211,11 @@ namespace cardscore_api.Services
             return Task.CompletedTask;
         }
 
+
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            _driver.Close();
+            _driver.Quit();
             return Task.CompletedTask;
         }
 
@@ -156,8 +246,7 @@ namespace cardscore_api.Services
                         }
 
                         string actionType = action.ActionType == GameActionType.YellowCard ? $"перебор желтых" :
-                            action.ActionType == GameActionType.YellowRedCard && criticalYellowCardCount != null ? $"получил вторую желтую карточку за матч (красную), перебор желтых" :
-                          action.ActionType == GameActionType.YellowRedCard ? "получил вторую желтую карточку за матч (красную)" :
+                            action.ActionType == GameActionType.YellowRedCard ? $"получил вторую желтую карточку за матч (красную)" :
                           action.ActionType == GameActionType.Switch ? "покидает поле и его заменяет " + action.Player2.Name :
                           "получил красную карточку";
 
@@ -169,7 +258,10 @@ namespace cardscore_api.Services
             }
             catch (Exception ex)
             {
+                var title = $"{game.Teams[0].Name} - {game.Teams[1].Name} ({action.Player.Name})";
+
                 _errorsService.CreateErrorFile(ex);
+                _logger.LogInformation("\n\n\n\n\n\nThrowNotificationError: " + userId + ", " + title + "\n\n\n\n\n\n", Microsoft.Extensions.Logging.LogLevel.Error);
             }
 
         }
@@ -184,18 +276,36 @@ namespace cardscore_api.Services
 
                     var gameKey = (game.Teams[0].Name + game.Teams[1].Name).Replace(" ", "");
 
+                    if (action.ActionType == GameActionType.YellowRedCard || action.ActionType == GameActionType.RedCard)
+                    {
+                        var deletedNotif = _dataContext.Notifications.FirstOrDefault(n => n.GameUrl == gameKey && n.UserId == userId && n.PlayerName == action.Player.Name && n.LeftTeam == action.LeftTeam && n.ActionType == GameActionType.YellowCard);
+
+                        var deletedNotif2 = _dataContext.Notifications.FirstOrDefault(n => n.GameUrl == gameKey && n.UserId == userId && n.PlayerName == action.Player.Name && n.LeftTeam == action.LeftTeam && n.ActionType == (action.ActionType == GameActionType.YellowRedCard ? GameActionType.RedCard : GameActionType.YellowRedCard));
+
+                        if (deletedNotif != null)
+                        {
+                            _dataContext.Notifications.Remove(deletedNotif);
+                        }
+
+                        if (deletedNotif2 != null)
+                        {
+                            _dataContext.Notifications.Remove(deletedNotif2);
+                        }
+                    }
+
                     Notification notif = new()
                     {
                         GameUrl = gameKey,
                         UserId = userId,
                         LeftTeam = action.LeftTeam,
-                        Name = DateTime.UtcNow.ToString() + " " + action.Player.Name + " " + action.ActionType,
+                        Name = DateTime.UtcNow + " " + action.Player.Name + " " + action.ActionType,
                         ActionType = action.ActionType,
                         PlayerUrl = action.Player.Url != null ? action.Player.Url : "",
                         PlayerName = action.Player.Name,
                         Time = action.Time,
                         PlayerUrl2 = action.Player2 != null ? action.Player2?.Url : "",
                         PlayerName2 = action.Player2 != null ? action.Player2?.Name : "",
+                        DateTime = DateTime.UtcNow
                     };
 
                     _dataContext.Notifications.Add(notif);
@@ -244,7 +354,12 @@ namespace cardscore_api.Services
                 var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
                 var league = await _dataContext.Leagues.FirstOrDefaultAsync(l => l.Title == notificator.Name);
 
-                var games = await GetActiveGames(league.Url, league.Title);
+                List<Game> games = new();
+
+                if (league != null)
+                {
+                    games = await GetActiveGames(league.Url, league.Title);
+                }
 
                 return games;
             }
@@ -266,15 +381,11 @@ namespace cardscore_api.Services
             using (var scope = _scopeFactory.CreateScope())
             {
                 var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-                var parseData = await _dataContext.LeagueParseDatas.FirstOrDefaultAsync(l => l.Url == url);
-                List<Game> activeGames = new();
+                var _parserService = scope.ServiceProvider.GetRequiredService<ParserService>();
 
-                switch (parseData.ParserType)
-                {
-                    case (int)ParserType.Soccer365:
-                        activeGames = await _soccer365ParserService.GetActiveGamesByUrl(parseData.Url, name);
-                        break;
-                }
+                var parseData = await _dataContext.LeagueParseDatas.FirstOrDefaultAsync(l => l.Url == url);
+
+                List<Game> activeGames = await _parserService.GetActiveGamesByUrl(_driver, parseData.Url, name);
 
                 return activeGames;
             }

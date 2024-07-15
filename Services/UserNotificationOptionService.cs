@@ -9,6 +9,7 @@ namespace cardscore_api.Services
     {
         private DataContext _context;
         private readonly UserService _userService;
+
         public UserNotificationOptionService(DataContext context, UserService userService)
         {
             _context = context;
@@ -66,9 +67,9 @@ namespace cardscore_api.Services
             {
                User = user,
                Name = name,
-               CardCount = 1,
-               CardCountTwo = 1,
-               CardCountThree = 1,
+               CardCount = 3,
+               CardCountTwo = 6,
+               CardCountThree = 9,
                 UserNotificationOptionType = UserNotificationOptionType.YellowCard,
             };
 

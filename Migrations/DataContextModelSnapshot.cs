@@ -17,6 +17,24 @@ namespace cardscore_api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.6");
 
+            modelBuilder.Entity("cardscore_api.Models.BaseOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BaseOptions");
+                });
+
             modelBuilder.Entity("cardscore_api.Models.CachedNotification", b =>
                 {
                     b.Property<int>("Id")
@@ -80,8 +98,8 @@ namespace cardscore_api.Migrations
                     b.Property<int?>("GamesCount")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ReglamentId")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("NearestGame")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("TEXT");
@@ -98,9 +116,6 @@ namespace cardscore_api.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ReglamentId")
-                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -137,6 +152,9 @@ namespace cardscore_api.Migrations
 
                     b.Property<int?>("ActionType")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("GameUrl")
                         .IsRequired()
@@ -184,9 +202,6 @@ namespace cardscore_api.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("Active")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("LeagueId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -310,17 +325,9 @@ namespace cardscore_api.Migrations
 
             modelBuilder.Entity("cardscore_api.Models.League", b =>
                 {
-                    b.HasOne("cardscore_api.Models.Reglament", "Reglament")
-                        .WithOne("League")
-                        .HasForeignKey("cardscore_api.Models.League", "ReglamentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("cardscore_api.Models.User", null)
                         .WithMany("Favorites")
                         .HasForeignKey("UserId");
-
-                    b.Navigation("Reglament");
                 });
 
             modelBuilder.Entity("cardscore_api.Models.User", b =>
@@ -343,12 +350,6 @@ namespace cardscore_api.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("cardscore_api.Models.Reglament", b =>
-                {
-                    b.Navigation("League")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("cardscore_api.Models.User", b =>

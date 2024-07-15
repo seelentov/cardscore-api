@@ -131,7 +131,7 @@
         }
         catch(Exception ex)
         {
-            await JsRuntime.InvokeVoidAsync("alert", JsonSerializer.Serialize(ex));
+            await JsRuntime.InvokeVoidAsync("alert", ex.ToString());
         }
     }
 

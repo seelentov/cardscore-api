@@ -10,14 +10,15 @@ namespace cardscore_api.Services
         private DataContext _context;
         private readonly RoleService _roleService;
         private readonly BCryptService _bCryptService;
-
+        private readonly BaseOptionsService _baseOptionsService;
         public object JsRuntime { get; private set; }
 
-        public UserService(DataContext context, RoleService roleService, BCryptService bCryptService)
+        public UserService(DataContext context, RoleService roleService, BCryptService bCryptService, BaseOptionsService baseOptionsService)
         {
             _context = context;
             _roleService = roleService;
             _bCryptService = bCryptService;
+            _baseOptionsService = baseOptionsService;
         }
 
         public async Task<List<User>> GetAll()
@@ -170,7 +171,7 @@ namespace cardscore_api.Services
 
             var passwordHash = _bCryptService.Hash(createUserDto.Password);
 
-            var subData = DateTime.UtcNow.AddDays(14);
+            var subData = DateTime.UtcNow.AddDays(_baseOptionsService.GetTestDays().Value);
 
             var user = new User()
             {

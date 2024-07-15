@@ -18,6 +18,7 @@ namespace cardscore_api.Models
 
     public enum ParserType
     {
-        Soccer365
+        Soccer365,
+        Soccerway
     }
 }

@@ -10,6 +10,6 @@
         public string PlayerName { get; set; } = null!;
         public string PlayerUrl2 { get; set; } = null!;
         public string PlayerName2 { get; set; } = null!;
-
+        public DateTime DateTime { get; set; }
     }
 }
