@@ -32,11 +32,11 @@
         <div class="input"><input type="text" @bind-value="parser.Url"></div>
     </label>
      <label for="">
-        Тип подписки:
-        <select class="select">
+        Тип парсера:
+        <select class="select" @bind="parser.ParserType">
             @foreach (var parserType in Enum.GetValues(typeof(ParserType)).Cast<ParserType>())
             {
-                <option @onclick="() => ChangeParserType(parserType)" selected="@(parserType == parser.ParserType)">@parserType</option>
+                <option value="@(parserType)">@parserType</option>
             }
         </select>
     </label>
@@ -54,17 +54,20 @@
         parser.ParserType = ParserType.Soccerway;
     }
 
-    void ChangeParserType(ParserType parserType)
-    {
-        parser.ParserType = parserType;
-    }
-
     async void Save()
     {
-        await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
-        await ParserSrv.Create(parser);
-        await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
-        NavigationManager.NavigateTo("/parser");
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+            await ParserSrv.Create(parser);
+            await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+            NavigationManager.NavigateTo("/parser");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+        
         
     }
 

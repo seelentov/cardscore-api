@@ -131,7 +131,7 @@
         }
         catch(Exception ex)
         {
-            await JsRuntime.InvokeVoidAsync("alert", ex.ToString());
+            Console.WriteLine(ex);
         }
     }
 

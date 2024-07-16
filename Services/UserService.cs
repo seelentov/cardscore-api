@@ -84,6 +84,11 @@ namespace cardscore_api.Services
                 user.Role = newUserData.Role;
             }
 
+            if (newUserData.RoleId != null)
+            {
+                user.RoleId = newUserData.RoleId;
+            }
+
             if (newUserData.SubData != null)
             {
                 user.SubData = newUserData.SubData;

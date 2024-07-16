@@ -1,0 +1,12 @@
+Error Type: SqliteException, Message: Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 5: 'unable to delete/modify user-function due to active statements'.
+   at Microsoft.Data.Sqlite.SqliteConnection.Deactivate()
+   at Microsoft.Data.Sqlite.SqliteConnection.Close()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.Dispose()
+   at Microsoft.EntityFrameworkCore.DbContext.Dispose()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.Dispose()
+   at cardscore_api.Services.NotificationWorkerService.<>c__DisplayClass9_0.<<StartAsync>b__0>d.MoveNext(), StackTrace:    at Microsoft.Data.Sqlite.SqliteConnection.Deactivate()
+   at Microsoft.Data.Sqlite.SqliteConnection.Close()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.Dispose()
+   at Microsoft.EntityFrameworkCore.DbContext.Dispose()
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.Dispose()
+   at cardscore_api.Services.NotificationWorkerService.<>c__DisplayClass9_0.<<StartAsync>b__0>d.MoveNext()

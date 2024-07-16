@@ -19,40 +19,21 @@ namespace cardscore_api.Services.ParserServices
         private readonly FormatService _formatService;
         private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-4);
         private readonly AngleSharp.IConfiguration _configuration;
-        private readonly IBrowsingContext _parserContext;
-        private readonly FetchService _fetchService;
-        private readonly FirefoxOptions _driverOptions;
         private readonly ErrorsService _errorsService;
         private readonly RedisService _redisService;
+        private readonly SeleniumService _seleniumService;
 
-        public SoccerwayParserService(FormatService formatService, FetchService fetchService, ErrorsService errorsService, RedisService redisService)
+        public SoccerwayParserService(FormatService formatService, ErrorsService errorsService, RedisService redisService, SeleniumService seleniumService)
         {
-            _fetchService = fetchService;
             _formatService = formatService;
-
-            FirefoxProfile profile = new FirefoxProfile();
-            profile.SetPreference("browser.cache.disk.enable", false);
-            profile.SetPreference("browser.cache.memory.enable", false);
-            profile.SetPreference("browser.cache.offline.enable", false);
-            profile.SetPreference("network.http.use-cache", false);
-            profile.SetPreference("extensions.enabled", false);
-            profile.SetPreference("browser.privatebrowsing.autostart", true);
-            profile.SetPreference("permissions.default.stylesheet", 2);
-            profile.SetPreference("permissions.default.image", 2);
-
-            _driverOptions = new FirefoxOptions();
-            _driverOptions.Profile = profile;
-            _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
-            _driverOptions.AddArgument("--headless");
-
-            _driverOptions.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0");
             _errorsService = errorsService;
             _redisService = redisService;
+            _seleniumService = seleniumService;
         }
 
         public async Task<League> GetLeagueDataByUrl(string url)
         {
-            var driver = new FirefoxDriver(_driverOptions);
+            var driver = _seleniumService.GetDriver();
 
             League league = new();
 
@@ -145,7 +126,9 @@ namespace cardscore_api.Services.ParserServices
 
                     DateTime dateTime = DateTime.UnixEpoch.AddSeconds(_formatService.ToInt(timeElement));
 
-                    var isPlayedTwoHourAgo = dateTime >= DateTime.UtcNow.AddHours(-4) && dateTime <= DateTime.UtcNow;
+                    var isTested = leagueUrl == "";
+
+                    var isPlayedTwoHourAgo = dateTime >= DateTime.UtcNow.AddHours(isTested ? -75 : - 3) && dateTime <= DateTime.UtcNow;
 
                     var activeGame = activeGameElem == "Playing" || isPlayedTwoHourAgo;
 
@@ -372,7 +355,7 @@ namespace cardscore_api.Services.ParserServices
 
         public async Task<List<GameAction>> ParseActionsByUrl(string url, string leagueName, string thisGameId, string leagueUrl)
         {
-            var driver = new FirefoxDriver(_driverOptions);
+            var driver = _seleniumService.GetDriver();
 
             var actions = new List<GameAction>();
 
@@ -593,7 +576,7 @@ namespace cardscore_api.Services.ParserServices
 
         public async Task<Player> ParsePlayerByPage(string url, string leagueName)
         {
-            var driver = new FirefoxDriver(_driverOptions);
+            var driver = _seleniumService.GetDriver();
             driver.Navigate().GoToUrl(url.Contains(_domain) ? url : _domain + url);
 
             var player = new Player();
@@ -845,7 +828,7 @@ namespace cardscore_api.Services.ParserServices
         public async Task<List<Game>> GetActiveGamesByUrl(string url, string name, bool parseActions = true)
         {
 
-            var driver = new FirefoxDriver(_driverOptions);
+            var driver = _seleniumService.GetDriver();
 
             var games = new List<Game>();
 
@@ -871,7 +854,7 @@ namespace cardscore_api.Services.ParserServices
 
         public async Task<List<Game>> GetGamesByUrl(string url, string name, DateTime? startDateFilter = null, DateTime? endDateFilter = null)
         {
-            var driver = new FirefoxDriver(_driverOptions);
+            var driver = _seleniumService.GetDriver();
 
             var games = new List<Game>();
 
@@ -924,7 +907,7 @@ namespace cardscore_api.Services.ParserServices
 
         public async Task<Game> ParseGameByPage(string url, string leagueName)
         {
-            var driver = new FirefoxDriver(_driverOptions);
+            var driver = _seleniumService.GetDriver();
             var game = new Game();
 
             try
@@ -979,7 +962,7 @@ namespace cardscore_api.Services.ParserServices
 
         public async Task<LeagueIncludeGames> GetDataByUrl(string url, DateTime? startDateFilter = null, DateTime? endDateFilter = null)
         {
-            var driver = new FirefoxDriver(_driverOptions);
+            var driver = _seleniumService.GetDriver();
 
             LeagueIncludeGames leagueIncludeGames = new();
 

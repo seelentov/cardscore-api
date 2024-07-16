@@ -46,9 +46,17 @@
 
     async void Save()
     {
-        await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
-        await InfoSvc.EditBySlug(slug, text);
-        await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+            await InfoSvc.EditBySlug(slug, text);
+            await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+        
 
     }
 

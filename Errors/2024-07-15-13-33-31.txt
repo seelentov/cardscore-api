@@ -1,0 +1,22 @@
+Error Type: SqliteException, Message: Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 5: 'database is locked For more information on this error code see https://www.sqlite.org/rescode.html'.
+   at Microsoft.Data.Sqlite.SqliteConnection.Deactivate()
+   at Microsoft.Data.Sqlite.SqliteConnection.Close()
+   at System.Data.Common.DbConnection.CloseAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.CloseAsync()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.CloseAsync()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalDataReader.DisposeAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at cardscore_api.Services.LeaguesService.GetByName(String name)
+   at cardscore_api.Services.LeaguesService.GetManyByNames(List`1 names)
+   at cardscore_api.Controllers.AuthController.GetFavoriteGames(String startDateString, String endDateString), StackTrace:    at Microsoft.Data.Sqlite.SqliteConnection.Deactivate()
+   at Microsoft.Data.Sqlite.SqliteConnection.Close()
+   at System.Data.Common.DbConnection.CloseAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.CloseAsync()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.CloseAsync()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalDataReader.DisposeAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at cardscore_api.Services.LeaguesService.GetByName(String name)
+   at cardscore_api.Services.LeaguesService.GetManyByNames(List`1 names)
+   at cardscore_api.Controllers.AuthController.GetFavoriteGames(String startDateString, String endDateString)

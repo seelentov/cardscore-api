@@ -49,7 +49,7 @@
         }
         catch (Exception ex)
         {
-            await JsRuntime.InvokeVoidAsync("alert", JsonSerializer.Serialize(ex));
+            Console.WriteLine(ex);
         }
         
     }

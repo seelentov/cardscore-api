@@ -52,6 +52,7 @@ builder.Services.AddTransient<NotificationsService>();
 builder.Services.AddTransient<ExpoNotificationsService>();
 builder.Services.AddTransient<BaseOptionsService>();
 builder.Services.AddTransient<FormatService>();
+builder.Services.AddSingleton<SeleniumService>();
 
 
 builder.Services.AddHostedService<BackupService>();

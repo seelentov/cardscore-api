@@ -47,10 +47,10 @@
     </label>
     <label for="">
         Роль:
-        <select class="select">
+        <select class="select" @onchange="ChangeRole" value="@user.Role.Name">
             @foreach (var role in roles)
             {
-                <option @onclick="() => ChangeRole(role)" selected="@(role.Id == user.RoleId)">@role.Name</option>
+                <option value="@(role.Name)">@role.Name</option>
             }
         </select>
     </label>
@@ -61,10 +61,10 @@
     </label>
     <label for="">
         Тип подписки:
-        <select class="select">
+        <select class="select" @bind="user.SubStatus">
             @foreach (var subStatus in Enum.GetValues(typeof(SubStatus)).Cast<SubStatus>())
             {
-                <option @onclick="() => ChangeSubStatus(subStatus)" selected="@(subStatus == user.SubStatus)">@subStatus</option>
+                <option value="@(subStatus)">@subStatus</option>
             }
         </select>
     </label>
@@ -91,10 +91,16 @@
         roles = await RoleSrv.GetAll();
     }
 
-    void ChangeRole(Role role)
+    void ChangeRole(ChangeEventArgs e)
     {
-        user.Role = role;
-        user.RoleId = role.Id;
+        if (e.Value is not null)
+        {
+            var roleName = (string)e.Value;
+            var role = roles.FirstOrDefault(r => r.Name == roleName);
+
+            user.Role = role;
+            user.RoleId = role.Id;
+        }
     }
 
     async void ChangePass()
@@ -107,18 +113,21 @@
         
     }
 
-    void ChangeSubStatus(SubStatus subStatus)
-    {
-        user.SubStatus = subStatus;
-    }
-
     async void Save()
     {
-        await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
-        await UsersSrv.Update(id, user, IsPassChanged);
-        IsPassChanged = false;
-        await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
-        NavigationManager.NavigateTo("/users");
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+            await UsersSrv.Update(id, user, IsPassChanged);
+            IsPassChanged = false;
+            await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+            NavigationManager.NavigateTo("/users");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+        
         
     }
 

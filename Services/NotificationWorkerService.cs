@@ -15,10 +15,9 @@ namespace cardscore_api.Services
         private readonly ExpoNotificationsService _expoNotificationsService;
         private readonly ILogger<NotificationWorkerService> _logger;
         private readonly int _timeFix = -2;
-        private readonly FirefoxOptions _driverOptions;
         private readonly FirefoxDriver _driver;
 
-        public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService, ILogger<NotificationWorkerService> logger)
+        public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService, ILogger<NotificationWorkerService> logger, SeleniumService seleniumService)
         {
             _soccer365ParserService = soccer365ParserService;
             _scopeFactory = scopeFactory;
@@ -26,26 +25,7 @@ namespace cardscore_api.Services
             _expoNotificationsService = expoNotificationsService;
             _logger = logger;
 
-            _logger = logger;
-
-            FirefoxProfile profile = new FirefoxProfile();
-            profile.SetPreference("browser.cache.disk.enable", false);
-            profile.SetPreference("browser.cache.memory.enable", false);
-            profile.SetPreference("browser.cache.offline.enable", false);
-            profile.SetPreference("network.http.use-cache", false);
-            profile.SetPreference("extensions.enabled", false);
-            profile.SetPreference("browser.privatebrowsing.autostart", true);
-            profile.SetPreference("permissions.default.stylesheet", 2);
-            profile.SetPreference("permissions.default.image", 2);
-
-            _driverOptions = new FirefoxOptions();
-            _driverOptions.Profile = profile;
-            _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
-            _driverOptions.AddArgument("--headless");
-
-            _driverOptions.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0");
-
-            _driver = new FirefoxDriver(_driverOptions);
+            _driver = seleniumService.GetDriver(); ;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -81,8 +61,9 @@ namespace cardscore_api.Services
                             var leagues = await _dataContext.Leagues.ToListAsync();
                             foreach (var league in leagues)
                             {
+                                var isTested = league.Url == "";
 
-                                if (league.NearestGame > DateTime.UtcNow)
+                                if (league.NearestGame > DateTime.UtcNow && !isTested)
                                 {
                                     continue;
                                 }
@@ -129,6 +110,7 @@ namespace cardscore_api.Services
                                         _logger.LogInformation("Empty: " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
                                     };
 
+                                    _logger.LogInformation("Wait: " + league.Title + " / " + league.NearestGame, Microsoft.Extensions.Logging.LogLevel.Information);
                                     _dataContext.SaveChanges();
 
                                     continue;

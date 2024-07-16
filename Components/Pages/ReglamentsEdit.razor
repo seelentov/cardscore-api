@@ -48,10 +48,19 @@
 
     async void Save()
     {
-        await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
-        await ReglamentsSrv.EditByName(reglament.Name, reglamentDto);
-        await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
-        NavigationManager.NavigateTo("/reglaments");
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Загрузка...");
+            await ReglamentsSrv.EditByName(reglament.Name, reglamentDto);
+            await JsRuntime.InvokeVoidAsync("alert", "Сохранено");
+            NavigationManager.NavigateTo("/reglaments");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+        
+        
         
     }
 
