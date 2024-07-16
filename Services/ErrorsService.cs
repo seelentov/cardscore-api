@@ -19,6 +19,9 @@
             {
                 Directory.CreateDirectory(_errorsDirectory);
             }
+            string formattedErrorData = errorData.ToString();
+
+            Console.WriteLine(formattedErrorData);
 
             try
             {
@@ -29,10 +32,6 @@
                     var latestBackupFile = backupFiles.OrderByDescending(f => f).Last();
                     File.Delete(latestBackupFile);
                 }
-
-                string formattedErrorData = $"Error Type: {errorData.GetType().Name}, Message: {errorData.ToString()}, StackTrace: {((Exception)errorData).StackTrace}";
-
-                _logger.LogInformation(formattedErrorData, LogLevel.Critical);
 
                 using (StreamWriter writer = new StreamWriter(filePath))
                 {

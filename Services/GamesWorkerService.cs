@@ -2,6 +2,7 @@
 using cardscore_api.Models;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using System;
 using System.Text.Json;
@@ -17,7 +18,7 @@ namespace cardscore_api.Services
 
         private readonly ErrorsService _errorsService;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly FirefoxDriver _driver;
+        private readonly ChromeDriver _driver;
         private readonly SeleniumService _seleniumService;
 
         public GamesWorkerService(ErrorsService errorsService, IServiceScopeFactory scopeFactory, ILogger<GamesWorkerService> logger, SeleniumService seleniumService)

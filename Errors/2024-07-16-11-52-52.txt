@@ -1,0 +1,48 @@
+Error Type: WebDriverException, Message: OpenQA.Selenium.WebDriverException: An unknown exception was encountered sending an HTTP request to the remote WebDriver server for URL http://localhost:54175/session/433894a8-8775-4ff4-9e8b-dd444dd36ee9/elements. The exception message was: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение. (localhost:54175)
+ ---> System.Net.Http.HttpRequestException: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение. (localhost:54175)
+ ---> System.Net.Sockets.SocketException (10061): Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение.
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.Sockets.Socket.<ConnectAsync>g__WaitForConnectWithCancellation|285_0(AwaitableSocketAsyncEventArgs saea, ValueTask connectTask, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at OpenQA.Selenium.Remote.HttpCommandExecutor.MakeHttpRequest(HttpRequestInfo requestInfo)
+   at OpenQA.Selenium.Remote.HttpCommandExecutor.ExecuteAsync(Command commandToExecute)
+   --- End of inner exception stack trace ---
+   at OpenQA.Selenium.Remote.HttpCommandExecutor.ExecuteAsync(Command commandToExecute)
+   at OpenQA.Selenium.Remote.DriverServiceCommandExecutor.ExecuteAsync(Command commandToExecute)
+   at OpenQA.Selenium.WebDriver.ExecuteAsync(String driverCommandToExecute, Dictionary`2 parameters)
+   at OpenQA.Selenium.WebDriver.Execute(String driverCommandToExecute, Dictionary`2 parameters)
+   at OpenQA.Selenium.WebDriver.FindElements(String mechanism, String value)
+   at OpenQA.Selenium.By.<.ctor>b__11_1(ISearchContext context)
+   at OpenQA.Selenium.By.FindElements(ISearchContext context)
+   at OpenQA.Selenium.WebDriver.FindElements(By by)
+   at cardscore_api.Services.ParserServices.SoccerwayParserService.<>c.<GetGames>b__11_1(IWebDriver d) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\SoccerwayParserService.cs:line 105
+   at OpenQA.Selenium.Support.UI.DefaultWait`1.Until[TResult](Func`2 condition, CancellationToken token)
+   at OpenQA.Selenium.Support.UI.DefaultWait`1.Until[TResult](Func`2 condition)
+   at cardscore_api.Services.ParserServices.SoccerwayParserService.GetGames(WebDriver driver, String leagueName, String leagueUrl, Boolean parseActions, Boolean onlyActive, Nullable`1 startDateFilter, Nullable`1 endDateFilter) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\SoccerwayParserService.cs:line 105
+   at cardscore_api.Services.ParserServices.SoccerwayParserService.GetDataByUrl(WebDriver driver, String url, Nullable`1 startDateFilter, Nullable`1 endDateFilter) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\SoccerwayParserService.cs:line 1007
+   at cardscore_api.Services.ParserService.GetDataByUrl(WebDriver driver, String url, Nullable`1 startDate, Nullable`1 endDate) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserService.cs:line 112
+   at cardscore_api.Services.GamesWorkerService.<>c__DisplayClass7_0.<<StartAsync>b__0>d.MoveNext() in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\GamesWorkerService.cs:line 54, StackTrace:    at OpenQA.Selenium.Remote.HttpCommandExecutor.ExecuteAsync(Command commandToExecute)
+   at OpenQA.Selenium.Remote.DriverServiceCommandExecutor.ExecuteAsync(Command commandToExecute)
+   at OpenQA.Selenium.WebDriver.ExecuteAsync(String driverCommandToExecute, Dictionary`2 parameters)
+   at OpenQA.Selenium.WebDriver.Execute(String driverCommandToExecute, Dictionary`2 parameters)
+   at OpenQA.Selenium.WebDriver.FindElements(String mechanism, String value)
+   at OpenQA.Selenium.By.<.ctor>b__11_1(ISearchContext context)
+   at OpenQA.Selenium.By.FindElements(ISearchContext context)
+   at OpenQA.Selenium.WebDriver.FindElements(By by)
+   at cardscore_api.Services.ParserServices.SoccerwayParserService.<>c.<GetGames>b__11_1(IWebDriver d) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\SoccerwayParserService.cs:line 105
+   at OpenQA.Selenium.Support.UI.DefaultWait`1.Until[TResult](Func`2 condition, CancellationToken token)
+   at OpenQA.Selenium.Support.UI.DefaultWait`1.Until[TResult](Func`2 condition)
+   at cardscore_api.Services.ParserServices.SoccerwayParserService.GetGames(WebDriver driver, String leagueName, String leagueUrl, Boolean parseActions, Boolean onlyActive, Nullable`1 startDateFilter, Nullable`1 endDateFilter) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\SoccerwayParserService.cs:line 105
+   at cardscore_api.Services.ParserServices.SoccerwayParserService.GetDataByUrl(WebDriver driver, String url, Nullable`1 startDateFilter, Nullable`1 endDateFilter) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\SoccerwayParserService.cs:line 1007
+   at cardscore_api.Services.ParserService.GetDataByUrl(WebDriver driver, String url, Nullable`1 startDate, Nullable`1 endDate) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserService.cs:line 112
+   at cardscore_api.Services.GamesWorkerService.<>c__DisplayClass7_0.<<StartAsync>b__0>d.MoveNext() in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\GamesWorkerService.cs:line 54

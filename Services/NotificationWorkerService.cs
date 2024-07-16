@@ -2,6 +2,7 @@
 using cardscore_api.Models;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using System.Text.Json;
 
@@ -15,7 +16,7 @@ namespace cardscore_api.Services
         private readonly ExpoNotificationsService _expoNotificationsService;
         private readonly ILogger<NotificationWorkerService> _logger;
         private readonly int _timeFix = -2;
-        private readonly FirefoxDriver _driver;
+        private readonly ChromeDriver _driver;
 
         public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService, ILogger<NotificationWorkerService> logger, SeleniumService seleniumService)
         {

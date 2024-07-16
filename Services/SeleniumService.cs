@@ -1,34 +1,42 @@
-﻿using OpenQA.Selenium.Firefox;
+﻿using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
+using WebDriverManager.DriverConfigs.Impl;
+using static WebDriverManager.DriverManager;
+
 
 namespace cardscore_api.Services
 {
     public class SeleniumService
     {
-        private readonly FirefoxOptions _driverOptions;
+        private readonly ChromeOptions _driverOptions;
         public SeleniumService()
         {
-            FirefoxProfile profile = new FirefoxProfile();
+            ChromeOptions options = new ChromeOptions();
 
-            profile.SetPreference("browser.cache.disk.enable", false);
-            profile.SetPreference("browser.cache.memory.enable", false);
-            profile.SetPreference("browser.cache.offline.enable", false);
-            profile.SetPreference("network.http.use-cache", false);
-            profile.SetPreference("extensions.enabled", false);
-            profile.SetPreference("browser.privatebrowsing.autostart", true);
-            profile.SetPreference("permissions.default.stylesheet", 2);
-            profile.SetPreference("permissions.default.image", 2);
+            options.AddUserProfilePreference("profile.default_content_settings.images", 2); // Блокирует изображения
+            options.AddUserProfilePreference("profile.default_content_settings.stylesheets", 2); // Блокирует стили
+            options.AddUserProfilePreference("profile.managed_default_content_settings.images", 2); // Блокирует изображения
+            options.AddUserProfilePreference("profile.managed_default_content_settings.stylesheets", 2); // Блокирует стили
+            options.AddUserProfilePreference("cache.disk_cache_size", 0); // Отключает кэширование на диске
+            options.AddUserProfilePreference("cache.memory_cache_size", 0); // Отключает кэширование в памяти
+            options.AddUserProfilePreference("cache.enable", false); // Отключает кэширование
+            options.AddUserProfilePreference("extensions.enabled", false); // Отключает расширения
+            options.AddUserProfilePreference("privacy.clear_browsing_data_on_exit", true); // Очистка данных при выходе
 
-            _driverOptions = new FirefoxOptions();
-            _driverOptions.Profile = profile;
+            options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
+            options.AddArgument("--headless=new");
+            options.AddArgument("disable-gpu");
+              options.AddArgument("no-sandbox");
+              options.AddArgument("--disable-extensions");
+              options.AddArgument("--disable-features=NetworkService");
+  
+            _driverOptions = options;
             _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
-            _driverOptions.AddArgument("--headless");
-            _driverOptions.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0");
 
         }
-        public FirefoxDriver GetDriver()
+        public ChromeDriver GetDriver()
         {
-            return new FirefoxDriver(_driverOptions);
+            return new ChromeDriver(_driverOptions);
         }
     }
 }
