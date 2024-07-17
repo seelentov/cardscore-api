@@ -407,7 +407,7 @@ namespace cardscore_api.Services.ParserServices
 
                 if(playerElems.Count < 1)
                 {
-                    Console.WriteLine($"Parse Empty/Error: {driver.Url}");
+                    Console.WriteLine($"Parse Empty/Error: {playerElems.Count} {i}");
                 }
 
                 var playerElem = playerElems[i];
