@@ -429,16 +429,19 @@ namespace cardscore_api.Services.ParserServices
                     {
                         gameAction.ActionType = GameActionType.RedCard;
                         thisBooking = j;
+                        break;
                     }
                     else if (src.Contains("Y2C"))
                     {
                         gameAction.ActionType = GameActionType.YellowRedCard;
                         thisBooking = j;
+                        break;
                     }
                     else if (src.Contains("YC"))
                     {
                         gameAction.ActionType = GameActionType.YellowCard;
                         thisBooking = j;
+                        break;
                     }
                 }
 
