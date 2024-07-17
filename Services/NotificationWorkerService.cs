@@ -141,12 +141,6 @@ namespace cardscore_api.Services
                                                     continue;
                                                 }
 
-                                                else
-                                                {
-                                                    _dataContext.CachedNotifications.Add(new CachedNotification(key));
-                                                    _dataContext.SaveChanges();
-                                                }
-
                                                 var isYellowCard = action.ActionType == GameActionType.YellowCard;
 
                                                 var haveCardCount = action.Player.YellowCards != null;
@@ -175,6 +169,8 @@ namespace cardscore_api.Services
                                                     _logger.LogInformation("\n\nCreateNotificator: " + option.UserId + ", " + key + "\n\n", Microsoft.Extensions.Logging.LogLevel.Information);
                                                 }
 
+                                                _dataContext.CachedNotifications.Add(new CachedNotification(key));
+                                                _dataContext.SaveChanges();
                                             }
                                         }
                                     }
