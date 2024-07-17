@@ -405,6 +405,11 @@ namespace cardscore_api.Services.ParserServices
             {
                 var playerElems = driver.FindElements(By.CssSelector($".combined-lineups-container .container.{selector} tr"));
 
+                if(playerElems.Count < 1)
+                {
+                    Console.WriteLine($"Parse Empty/Error: {driver.Url}");
+                }
+
                 var playerElem = playerElems[i];
 
                 var bookings = playerElem.FindElements(By.CssSelector(".bookings span"));
@@ -447,7 +452,7 @@ namespace cardscore_api.Services.ParserServices
                     continue;
                 }
 
-                gameAction.Time = _formatService.ClearString(bookings[thisBooking].Text);
+                gameAction.Time = bookings.Count > 0 ? _formatService.ClearString(bookings[thisBooking].Text) : "";
 
                 Player player = new();
 
@@ -615,10 +620,10 @@ namespace cardscore_api.Services.ParserServices
 
                 var haveName2 = driver.FindElements(By.CssSelector("h1")).Count > 0;
 
+                driver.Navigate().Back();
+
                 if (!haveName2)
                 {
-                    driver.Navigate().Back();
-
                     return new Player()
                     {
                         Name = null,
@@ -633,8 +638,6 @@ namespace cardscore_api.Services.ParserServices
                         Empty = true
                     };
                 }
-
-                driver.Navigate().Back();
             }
 
             for (var i = 0; i < 4; i++)
