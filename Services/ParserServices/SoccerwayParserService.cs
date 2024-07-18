@@ -405,6 +405,11 @@ namespace cardscore_api.Services.ParserServices
             {
                 var playerElems = driver.FindElements(By.CssSelector($".combined-lineups-container .container.{selector} tr"));
 
+                if(playerElems.Count < 1 || playerElems.Count < i - 1)
+                {
+                    break;
+                }
+
                 var playerElem = playerElems[i];
 
                 var bookings = playerElem.FindElements(By.CssSelector(".bookings span"));
