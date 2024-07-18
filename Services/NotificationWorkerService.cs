@@ -26,7 +26,7 @@ namespace cardscore_api.Services
             _expoNotificationsService = expoNotificationsService;
             _logger = logger;
 
-            _driver = seleniumService.GetDriver(); ;
+            _driver = seleniumService.GetDriver();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
