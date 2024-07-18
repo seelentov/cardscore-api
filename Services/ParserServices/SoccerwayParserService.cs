@@ -126,7 +126,7 @@ namespace cardscore_api.Services.ParserServices
 
                     DateTime dateTime = DateTime.UnixEpoch.AddSeconds(_formatService.ToInt(timeElement));
 
-                    var isTested = leagueUrl == "";
+                    var isTested = true;
 
                     var isPlayedTwoHourAgo = dateTime >= DateTime.UtcNow.AddHours(isTested ? -75 : -4) && dateTime <= DateTime.UtcNow;
 
@@ -603,214 +603,223 @@ namespace cardscore_api.Services.ParserServices
 
         public async Task<Player> ParsePlayer(WebDriver driver, string url, string leagueName, string? thisGameId = null, string? leagueUrl = null)
         {
-            Console.WriteLine($"Parse {url}. {leagueUrl}!");
-
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-
-            var haveName = driver.FindElements(By.CssSelector("h1")).Count > 0;
-
-            var urlFinally = haveName ? url : url.ReplaceFirst("ru", "int");
-
-            if (!haveName)
+            try
             {
-                var intUrl = _formatService.ReplaceFirst(url, "ru", "int");
-                driver.Navigate().GoToUrl(intUrl);
+                Console.WriteLine($"Parse {url}. {leagueUrl}!");
 
-                var haveName2 = driver.FindElements(By.CssSelector("h1")).Count > 0;
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
-                driver.Navigate().Back();
+                var haveName = driver.FindElements(By.CssSelector("h1")).Count > 0;
 
-                if (!haveName2)
+                var urlFinally = haveName ? url : url.ReplaceFirst("ru", "int");
+
+                if (!haveName)
                 {
-                    return new Player()
+                    var intUrl = _formatService.ReplaceFirst(url, "ru", "int");
+                    driver.Navigate().GoToUrl(intUrl);
+
+                    var haveName2 = driver.FindElements(By.CssSelector("h1")).Count > 0;
+
+                    driver.Navigate().Back();
+
+                    if (!haveName2)
                     {
-                        Name = null,
-                        Position = null,
-                        Url = urlFinally,
-                        ImageUrl = null,
-                        Goal = 0,
-                        YellowCards = 0,
-                        RedCards = 0,
-                        YellowRedCards = 0,
-                        GameCount = 0,
-                        Empty = true
-                    };
+                        return new Player()
+                        {
+                            Name = null,
+                            Position = null,
+                            Url = urlFinally,
+                            ImageUrl = null,
+                            Goal = 0,
+                            YellowCards = 0,
+                            RedCards = 0,
+                            YellowRedCards = 0,
+                            GameCount = 0,
+                            Empty = true
+                        };
+                    }
                 }
-            }
 
-            for (var i = 0; i < 4; i++)
-            {
-                driver.ExecuteScript("document.querySelector('.content ul li a')?.click()");
-                wait.Until(d => d.FindElements(By.CssSelector(".block_player_career .overlay")).Count == 0);
-            }
-
-            var name = driver.FindElement(By.CssSelector("h1")).Text;
-            var position = driver.FindElements(By.CssSelector("dd[data-position='position']")).Count > 0 ? driver.FindElement(By.CssSelector("dd[data-position='position']")).Text : null ;
-            var imageUrl = driver.FindElements(By.CssSelector(".yui-u img")).Count > 0 ? driver.FindElement(By.CssSelector(".yui-u img")).GetAttribute("src") : null;
-
-            Player player = new()
-            {
-                Name = _formatService.ClearString(name),
-                Position = _formatService.ClearString(position),
-                Url = urlFinally,
-                ImageUrl = imageUrl,
-                Goal = 0,
-                YellowCards = 0,
-                RedCards = 0,
-                YellowRedCards = 0,
-                GameCount = 0,
-            };
-
-
-            if (thisGameId != null && leagueUrl != null)
-            {
-                Console.WriteLine($"Parse {player.Name} by games!");
-                var checkLeague = await _redisService.GetCachedDataByUrl(leagueUrl, DateTime.UtcNow.AddYears(-2));
-
-                if (checkLeague != null)
+                for (var i = 0; i < 4; i++)
                 {
+                    driver.ExecuteScript("document.querySelector('.content ul li a')?.click()");
+                    wait.Until(d => d.FindElements(By.CssSelector(".block_player_career .overlay")).Count == 0);
+                }
 
-                    var checkGames = checkLeague.Games.Where(g => g.Id != thisGameId).ToList();
+                var name = driver.FindElement(By.CssSelector("h1")).Text;
+                var position = driver.FindElements(By.CssSelector("dd[data-position='position']")).Count > 0 ? driver.FindElement(By.CssSelector("dd[data-position='position']")).Text : null;
+                var imageUrl = driver.FindElements(By.CssSelector(".yui-u img")).Count > 0 ? driver.FindElement(By.CssSelector(".yui-u img")).GetAttribute("src") : null;
 
-                    for (var i = 0; i < 30; i++)
+                Player player = new()
+                {
+                    Name = _formatService.ClearString(name),
+                    Position = _formatService.ClearString(position),
+                    Url = urlFinally,
+                    ImageUrl = imageUrl,
+                    Goal = 0,
+                    YellowCards = 0,
+                    RedCards = 0,
+                    YellowRedCards = 0,
+                    GameCount = 0,
+                };
+
+
+                if (thisGameId != null && leagueUrl != null)
+                {
+                    Console.WriteLine($"Parse {player.Name} by games!");
+                    var checkLeague = await _redisService.GetCachedDataByUrl(leagueUrl, DateTime.UtcNow.AddYears(-2));
+
+                    if (checkLeague != null)
                     {
-                        var gamesItems = driver.FindElements(By.CssSelector("tr.match"));
 
-                        var isHaveActual = gamesItems.Any(gameItem =>
+                        var checkGames = checkLeague.Games.Where(g => g.Id != thisGameId).ToList();
+
+                        for (var i = 0; i < 30; i++)
                         {
-                            var date = DateTime.UnixEpoch.AddSeconds(_formatService.ToInt(gameItem.GetAttribute("data-timestamp")));
-                            var year = date.Year;
-                            var actYear = DateTime.UtcNow.Year;
-                            var actYear2 = DateTime.UtcNow.AddYears(-1).Year;
+                            var gamesItems = driver.FindElements(By.CssSelector("tr.match"));
 
-                            return year == actYear || year == actYear2;
-                        });
-
-                        if (!isHaveActual)
-                        {
-                            break;
-                        }
-
-                        if (isHaveActual)
-                        {
-                            foreach (var gameItem in gamesItems)
+                            var isHaveActual = gamesItems.Any(gameItem =>
                             {
-                                var id = gameItem.GetAttribute("data-event-id");
+                                var date = DateTime.UnixEpoch.AddSeconds(_formatService.ToInt(gameItem.GetAttribute("data-timestamp")));
+                                var year = date.Year;
+                                var actYear = DateTime.UtcNow.Year;
+                                var actYear2 = DateTime.UtcNow.AddYears(-1).Year;
 
-                                var inThisLeague = checkGames.Any(game => game.Id == id);
+                                return year == actYear || year == actYear2;
+                            });
 
-                                if (!inThisLeague)
-                                {
-                                    continue;
-                                }
-
-                                var gameItemHtml = gameItem.GetAttribute("innerHTML");
-
-                                if (gameItemHtml.Contains("YC.png"))
-                                {
-                                    player.YellowCards++;
-                                }
-                                else if (gameItemHtml.Contains("Y2C.png"))
-                                {
-                                    player.YellowRedCards++;
-                                }
-
-                                if (gameItemHtml.Contains("RC.png"))
-                                {
-                                    player.RedCards++;
-                                }
-
-                                if (gameItemHtml.Contains("G.png"))
-                                {
-                                    player.Goal++;
-                                }
-
-                                player.GameCount++;
-
+                            if (!isHaveActual)
+                            {
+                                break;
                             }
+
+                            if (isHaveActual)
+                            {
+                                foreach (var gameItem in gamesItems)
+                                {
+                                    var id = gameItem.GetAttribute("data-event-id");
+
+                                    var inThisLeague = checkGames.Any(game => game.Id == id);
+
+                                    if (!inThisLeague)
+                                    {
+                                        continue;
+                                    }
+
+                                    var gameItemHtml = gameItem.GetAttribute("innerHTML");
+
+                                    if (gameItemHtml.Contains("YC.png"))
+                                    {
+                                        player.YellowCards++;
+                                    }
+                                    else if (gameItemHtml.Contains("Y2C.png"))
+                                    {
+                                        player.YellowRedCards++;
+                                    }
+
+                                    if (gameItemHtml.Contains("RC.png"))
+                                    {
+                                        player.RedCards++;
+                                    }
+
+                                    if (gameItemHtml.Contains("G.png"))
+                                    {
+                                        player.Goal++;
+                                    }
+
+                                    player.GameCount++;
+
+                                }
+                            }
+
+                            var prevBtnDis = driver.FindElements(By.CssSelector(".previous.disabled"));
+
+                            if (prevBtnDis.Count > 0)
+                            {
+                                break;
+                            }
+
+                            var prevBtn = driver.FindElements(By.CssSelector(".previous"));
+
+                            if (prevBtn.Count < 1)
+                            {
+                                break;
+                            }
+
+                            driver.ExecuteScript("document.querySelector('.previous')?.click()");
+                            wait.Until(d => d.FindElements(By.CssSelector(".content .overlay")).Count == 0);
                         }
-
-                        var prevBtnDis = driver.FindElements(By.CssSelector(".previous.disabled"));
-
-                        if (prevBtnDis.Count > 0)
-                        {
-                            break;
-                        }
-
-                        var prevBtn = driver.FindElements(By.CssSelector(".previous"));
-
-                        if(prevBtn.Count < 1)
-                        {
-                            break;
-                        }
-
-                        driver.ExecuteScript("document.querySelector('.previous')?.click()");
-                        wait.Until(d => d.FindElements(By.CssSelector(".content .overlay")).Count == 0);
                     }
                 }
-            }
-            else
-            {
-                Console.WriteLine($"Parse {player.Name} by table!");
-                while (true)
+                else
                 {
-                    int addGoals = 0;
-                    int addYellowCards = 0;
-                    int addYellowRedCards = 0;
-                    int addRedCards = 0;
-                    int addGamesCount = 0;
-
-                    try
+                    Console.WriteLine($"Parse {player.Name} by table!");
+                    while (true)
                     {
-                        var statContainer = driver.FindElement(By.CssSelector(".playerstats tbody"));
+                        int addGoals = 0;
+                        int addYellowCards = 0;
+                        int addYellowRedCards = 0;
+                        int addRedCards = 0;
+                        int addGamesCount = 0;
 
-                        var statElems = statContainer.FindElements(By.CssSelector("tr"));
-
-                        foreach (var statElem in statElems.Where(s =>
+                        try
                         {
-                            var competition = s.FindElement(By.CssSelector(".competition a")).GetAttribute("title");
-                            var season = s.FindElement(By.CssSelector(".season a")).Text;
-                            var yearNow = DateTime.UtcNow.AddHours(3).Year.ToString();
-                            var foormattedSeason = _formatService.ClearString(season);
+                            var statContainer = driver.FindElement(By.CssSelector(".playerstats tbody"));
 
-                            return _formatService.ClearString(competition).ToLower().Contains(leagueName.Split(" ")[0].ToLower()) && foormattedSeason.Contains(yearNow);
+                            var statElems = statContainer.FindElements(By.CssSelector("tr"));
 
-                        }).ToList())
-                        {
-                            var goals = statElem.FindElement(By.CssSelector("td.goals")).Text;
-                            addGoals = _formatService.ToInt(goals);
+                            foreach (var statElem in statElems.Where(s =>
+                            {
+                                var competition = s.FindElement(By.CssSelector(".competition a")).GetAttribute("title");
+                                var season = s.FindElement(By.CssSelector(".season a")).Text;
+                                var yearNow = DateTime.UtcNow.AddHours(3).Year.ToString();
+                                var foormattedSeason = _formatService.ClearString(season);
 
-                            var yellowCards = statElem.FindElement(By.CssSelector("td.yellow-cards")).Text;
-                            addYellowCards = _formatService.ToInt(yellowCards);
+                                return _formatService.ClearString(competition).ToLower().Contains(leagueName.Split(" ")[0].ToLower()) && foormattedSeason.Contains(yearNow);
 
-                            var yellowRedCards = statElem.FindElement(By.XPath("td[contains(@class, '2nd-yellow-cards')]")).Text;
-                            addYellowRedCards = _formatService.ToInt(yellowRedCards);
+                            }).ToList())
+                            {
+                                var goals = statElem.FindElement(By.CssSelector("td.goals")).Text;
+                                addGoals = _formatService.ToInt(goals);
 
-                            var redCards = statElem.FindElement(By.CssSelector("td.red-cards")).Text;
-                            addRedCards = _formatService.ToInt(redCards);
+                                var yellowCards = statElem.FindElement(By.CssSelector("td.yellow-cards")).Text;
+                                addYellowCards = _formatService.ToInt(yellowCards);
 
-                            var gamesCount = statElem.FindElement(By.CssSelector("td.appearances")).Text;
-                            addGamesCount = _formatService.ToInt(gamesCount);
+                                var yellowRedCards = statElem.FindElement(By.XPath("td[contains(@class, '2nd-yellow-cards')]")).Text;
+                                addYellowRedCards = _formatService.ToInt(yellowRedCards);
+
+                                var redCards = statElem.FindElement(By.CssSelector("td.red-cards")).Text;
+                                addRedCards = _formatService.ToInt(redCards);
+
+                                var gamesCount = statElem.FindElement(By.CssSelector("td.appearances")).Text;
+                                addGamesCount = _formatService.ToInt(gamesCount);
+                            }
+
+                            player.Goal = addGoals;
+                            player.YellowCards = addYellowCards;
+                            player.YellowRedCards = addYellowRedCards;
+                            player.RedCards = addRedCards;
+                            player.GameCount = addGamesCount;
+
+                            break;
                         }
-
-                        player.Goal = addGoals;
-                        player.YellowCards = addYellowCards;
-                        player.YellowRedCards = addYellowRedCards;
-                        player.RedCards = addRedCards;
-                        player.GameCount = addGamesCount;
-
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error. Parse " + name + ". Try Again");
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error. Parse " + name + ". Try Again");
+                        }
                     }
                 }
+
+                Console.WriteLine($"Player {player.Name} \nData: \nY:{player.YellowCards}\nY2:{player.YellowRedCards}\nR:{player.RedCards}\nG:{player.Goal}");
+
+                return player;
             }
-
-            Console.WriteLine($"Player {player.Name} \nData: \nY:{player.YellowCards}\nY2:{player.YellowRedCards}\nR:{player.RedCards}\nG:{player.Goal}");
-
-            return player;
+            catch (Exception ex)
+            {
+                Console.WriteLine("Player: " + url);
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
         }
 
 

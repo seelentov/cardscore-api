@@ -1,0 +1,28 @@
+OpenQA.Selenium.WebDriverException: An unknown exception was encountered sending an HTTP request to the remote WebDriver server for URL http://localhost:56221/session/958c7584daece05f6723680ead99afc2/elements. The exception message was: An error occurred while sending the request.
+ ---> System.Net.Http.HttpRequestException: An error occurred while sending the request.
+ ---> System.IO.IOException: Unable to read data from the transport connection: Удаленный хост принудительно разорвал существующее подключение..
+ ---> System.Net.Sockets.SocketException (10054): Удаленный хост принудительно разорвал существующее подключение.
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at OpenQA.Selenium.Remote.HttpCommandExecutor.MakeHttpRequest(HttpRequestInfo requestInfo)
+   at OpenQA.Selenium.Remote.HttpCommandExecutor.ExecuteAsync(Command commandToExecute)
+   --- End of inner exception stack trace ---
+   at OpenQA.Selenium.Remote.HttpCommandExecutor.ExecuteAsync(Command commandToExecute)
+   at OpenQA.Selenium.Remote.DriverServiceCommandExecutor.ExecuteAsync(Command commandToExecute)
+   at OpenQA.Selenium.WebDriver.ExecuteAsync(String driverCommandToExecute, Dictionary`2 parameters)
+   at OpenQA.Selenium.WebDriver.Execute(String driverCommandToExecute, Dictionary`2 parameters)
+   at OpenQA.Selenium.WebDriver.FindElements(String mechanism, String value)
+   at OpenQA.Selenium.By.<.ctor>b__11_1(ISearchContext context)
+   at OpenQA.Selenium.By.FindElements(ISearchContext context)
+   at OpenQA.Selenium.WebDriver.FindElements(By by)
+   at cardscore_api.Services.ParserServices.SoccerwayParserService.GetGames(WebDriver driver, String leagueName, String leagueUrl, Boolean parseActions, Boolean onlyActive, Nullable`1 startDateFilter, Nullable`1 endDateFilter) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\SoccerwayParserService.cs:line 117
+   at cardscore_api.Services.ParserServices.SoccerwayParserService.GetDataByUrl(WebDriver driver, String url, Nullable`1 startDateFilter, Nullable`1 endDateFilter) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserServices\SoccerwayParserService.cs:line 1008
+   at cardscore_api.Services.ParserService.GetDataByUrl(WebDriver driver, String url, Nullable`1 startDate, Nullable`1 endDate) in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\ParserService.cs:line 112
+   at cardscore_api.Services.GamesWorkerService.<>c__DisplayClass7_0.<<StartAsync>b__0>d.MoveNext() in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\GamesWorkerService.cs:line 55
