@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
+using System.Net;
 using System.Text.Json;
 
 namespace cardscore_api.Services
@@ -11,6 +12,8 @@ namespace cardscore_api.Services
     public class NotificationWorkerService : IHostedService
     {
         private readonly Soccer365ParserService _soccer365ParserService;
+        private readonly AsyncService _asyncService;
+
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ErrorsService _errorsService;
         private readonly ExpoNotificationsService _expoNotificationsService;
@@ -18,7 +21,7 @@ namespace cardscore_api.Services
         private readonly int _timeFix = -2;
         private readonly ChromeDriver _driver;
 
-        public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService, ILogger<NotificationWorkerService> logger, SeleniumService seleniumService)
+        public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService, ILogger<NotificationWorkerService> logger, SeleniumService seleniumService, AsyncService asyncService)
         {
             _soccer365ParserService = soccer365ParserService;
             _scopeFactory = scopeFactory;
@@ -27,6 +30,7 @@ namespace cardscore_api.Services
             _logger = logger;
 
             _driver = seleniumService.GetDriver();
+            _asyncService = asyncService;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -71,7 +75,19 @@ namespace cardscore_api.Services
 
                                 _logger.LogInformation("CheckLeague: " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
 
-                                var activeGames = await GetActiveGames(league.Url, league.Title);
+
+                                var activeGames = new List<Game>();
+
+                                try
+                                {
+                                    activeGames = await _asyncService.WithTimeout(GetActiveGames(league.Url, league.Title), TimeSpan.FromMinutes(10));
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("CheckTimeout: " + league.Title);
+                                    continue;
+                                }
+
 
                                 if (activeGames != null && activeGames.Count > 0)
                                 {
@@ -85,7 +101,7 @@ namespace cardscore_api.Services
                                         _logger.LogInformation("Error SavedActive: " + league.Title + " " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Information);
                                     }
                                 }
-                                
+
                                 if (activeGames == null || activeGames.Count < 1)
                                 {
                                     var leagueData = await _redisService.GetCachedDataByUrl(league.Url);
