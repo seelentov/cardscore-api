@@ -21,7 +21,9 @@ builder.Services.AddRazorComponents()
 
 
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
-    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+        {
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+        }
 );
 
 builder.Services.AddEndpointsApiExplorer();
@@ -78,10 +80,6 @@ else
 {
     app.UseMiddleware<BasicAuthMiddleware>();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.UseStaticFiles();
 app.UseAntiforgery();

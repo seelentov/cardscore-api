@@ -92,7 +92,7 @@ namespace cardscore_api.Services.ParserServices
 
             var isPaginated = driver.FindElements(By.CssSelector(".block_competition_matches_summary .next")).Count > 0 && driver.FindElements(By.CssSelector(".block_competition_matches_summary .previous")).Count > 0;
 
-            var count = isPaged ? pagesCount : isPaginated ? Int32.MaxValue : 1;
+            var count = isPaged ? pagesCount : isPaginated ? 500 : 1;
 
             List <Game> games = new();
 
@@ -268,13 +268,13 @@ namespace cardscore_api.Services.ParserServices
                     }
                     else
                     {
-                        if (i < 10000)
+                        if (i < 500)
                         {
                             var prevBtn = driver.FindElements(By.CssSelector(".block_competition_matches_summary .previous.disabled"));
 
                             if (prevBtn.Count > 0)
                             {
-                                i+= 10000;
+                                i+= 501;
                                 driver.Navigate().Refresh();
 
                                 var nextBtn = driver.FindElements(By.CssSelector(".block_competition_matches_summary .next.disabled"));
