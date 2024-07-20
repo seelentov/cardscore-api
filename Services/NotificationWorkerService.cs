@@ -84,7 +84,7 @@ namespace cardscore_api.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                    Console.WriteLine("CheckTimeout: " + league.Title);
+                                    _logger.LogInformation("Check Key: " + league.Title + "\n" + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
                                     continue;
                                 }
 
@@ -98,7 +98,7 @@ namespace cardscore_api.Services
                                     }
                                     catch (Exception ex)
                                     {
-                                        _logger.LogInformation("Error SavedActive: " + league.Title + " " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Information);
+                                        _logger.LogInformation("Error SavedActive: " + league.Title + " " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
                                     }
                                 }
 
@@ -196,7 +196,8 @@ namespace cardscore_api.Services
                     }
                     catch (Exception ex)
                     {
-                        _driver.Navigate().Refresh();
+                        _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+
                         _errorsService.CreateErrorFile(ex);
                     }
                 }
