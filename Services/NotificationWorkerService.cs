@@ -17,9 +17,10 @@ namespace cardscore_api.Services
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ErrorsService _errorsService;
         private readonly ExpoNotificationsService _expoNotificationsService;
+        private readonly SeleniumService _seleniumService;
         private readonly ILogger<NotificationWorkerService> _logger;
         private readonly int _timeFix = -2;
-        private readonly ChromeDriver _driver;
+        private ChromeDriver _driver;
 
         public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService, ILogger<NotificationWorkerService> logger, SeleniumService seleniumService, AsyncService asyncService)
         {
@@ -30,6 +31,9 @@ namespace cardscore_api.Services
             _logger = logger;
 
             _driver = seleniumService.GetDriver();
+
+            _seleniumService = seleniumService;
+
             _asyncService = asyncService;
         }
 
@@ -77,17 +81,8 @@ namespace cardscore_api.Services
 
 
                                 var activeGames = new List<Game>();
-
-                                try
-                                {
-                                    activeGames = await _asyncService.WithTimeout(GetActiveGames(league.Url, league.Title), TimeSpan.FromMinutes(10));
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogInformation("Check Key: " + league.Title + "\n" + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
-                                    continue;
-                                }
-
+                                
+                                activeGames = await GetActiveGames(league.Url, league.Title);
 
                                 if (activeGames != null && activeGames.Count > 0)
                                 {
@@ -196,8 +191,11 @@ namespace cardscore_api.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+                        _driver.Quit();
 
+                        _driver = _seleniumService.GetDriver();
+                        _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+                        _logger.LogInformation("ReloadNotifSession!", Microsoft.Extensions.Logging.LogLevel.Error);
                         _errorsService.CreateErrorFile(ex);
                     }
                 }
