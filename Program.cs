@@ -58,8 +58,8 @@ builder.Services.AddSingleton<SeleniumService>();
 builder.Services.AddSingleton<AsyncService>();
 
 
-builder.Services.AddHostedService<BackupService>();
-/*builder.Services.AddHostedService<NotificationWorkerService>();*/
+builder.Services.AddHostedService<BackupService>(); 
+builder.Services.AddHostedService<NotificationWorkerService>();
 builder.Services.AddHostedService<GamesWorkerService>();
 
 builder.Host.ConfigureLogging(opt =>
