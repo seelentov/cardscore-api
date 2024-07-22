@@ -222,7 +222,7 @@ namespace cardscore_api.Controllers
 
                     if (cachedData == null)
                     {
-                        games = await _parserService.GetGamesByUrl(favoriteLeague.Url, favoriteLeague.Title);
+                        games = new List<Game>();
                     }
                     else
                     {
