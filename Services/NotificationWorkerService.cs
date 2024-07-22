@@ -170,6 +170,21 @@ namespace cardscore_api.Services
 
                                                 if (isCreateNotif)
                                                 {
+                                                    try
+                                                    {
+                                                        var player = await _redisService.GetAsync(action.Player.Url);
+
+                                                        if(player == null)
+                                                        {
+                                                            await _redisService.SetAsync("player:" + action.Player.Url, JsonSerializer.Serialize(action.Player), TimeSpan.FromDays(2));
+                                                            Console.WriteLine("SavedPlayer: " + action.Player.Name);
+                                                        }
+                                                    }
+                                                    catch
+                                                    {
+                                                        Console.WriteLine("Error SavedPlayer: " + action.Player.Name);
+                                                    }
+
                                                     if (option.Active)
                                                     {
                                                         await ThrowNotification(game, action, option.UserId, league, criticalYellowCardCount);
@@ -191,7 +206,10 @@ namespace cardscore_api.Services
                     }
                     catch (Exception ex)
                     {
-                        _driver.Quit();
+                        if(_driver != null)
+                        {
+                            _driver.Quit();
+                        }
 
                         _driver = _seleniumService.GetDriver();
                         _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);

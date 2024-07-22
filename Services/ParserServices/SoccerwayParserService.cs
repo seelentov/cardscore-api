@@ -499,16 +499,7 @@ namespace cardscore_api.Services.ParserServices
 
                     driver.Navigate().Back();
 
-                    try
-                    {
-                        await _redisService.SetAsync("player:" + player.Url, JsonSerializer.Serialize(player), TimeSpan.FromDays(2));
-                        Console.WriteLine("SavedPlayer: " + player.Name);
 
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Error SavedPlayer: " + player.Name);
-                    }
 
                 }
                 else
