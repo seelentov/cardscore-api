@@ -18,7 +18,7 @@ namespace cardscore_api.Services
 
         private readonly ErrorsService _errorsService;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ChromeDriver _driver;
+        private ChromeDriver _driver;
         private readonly SeleniumService _seleniumService;
 
         public GamesWorkerService(ErrorsService errorsService, IServiceScopeFactory scopeFactory, ILogger<GamesWorkerService> logger, SeleniumService seleniumService)
@@ -66,6 +66,16 @@ namespace cardscore_api.Services
                     }
                     catch (Exception ex)
                     {
+                        if (_driver != null)
+                        {
+                            _driver.Quit();
+                        }
+
+                        _driver = _seleniumService.GetDriver();
+                        _logger.LogInformation("GamesWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+                        _logger.LogInformation("ReloadGamesWSession!", Microsoft.Extensions.Logging.LogLevel.Error);
+                        _errorsService.CreateErrorFile(ex);
+
                         _errorsService.CreateErrorFile(ex);
                     }
                 }
