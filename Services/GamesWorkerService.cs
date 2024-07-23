@@ -51,6 +51,11 @@ namespace cardscore_api.Services
 
                             foreach (var league in leagues)
                             {
+                                if(league.LastUpdate > DateTime.UtcNow)
+                                {
+                                    continue;
+                                }
+
                                 _logger.LogInformation($"Saving {league.Title} \n", Microsoft.Extensions.Logging.LogLevel.Information);
                                 var leagueData = await _parserService.GetDataByUrl(_driver, league.Url, DateTime.UtcNow.AddYears(-2));
 
@@ -59,9 +64,10 @@ namespace cardscore_api.Services
                                     await _redisService.SetAsync("league:" + league.Url, JsonSerializer.Serialize(leagueData), TimeSpan.FromDays(1));
                                     _logger.LogInformation($"Save {league.Title} \n", Microsoft.Extensions.Logging.LogLevel.Information);
                                 }
-                            }
 
-                            await Task.Delay(TimeSpan.FromDays(12));
+                                league.LastUpdate = DateTime.UtcNow.AddHours(12);
+                                _dataContext.SaveChanges();
+                            }
                         }
                     }
                     catch (Exception ex)
