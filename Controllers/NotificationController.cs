@@ -8,16 +8,17 @@ namespace cardscore_api.Controllers
     [Route("api/notification")]
     public class NotificationController: ControllerBase
     {
-        private readonly ILogger<AuthController> _logger;
+        private readonly ILogger<NotificationController> _logger;
         private readonly UserNotificationOptionService _userNotificationOptionService;
         private readonly UserService _userService;
         private readonly ErrorsService _errorsService;
 
-        public NotificationController(ILogger<AuthController> logger, UserNotificationOptionService userNotificationOptionService, UserService userService)
+        public NotificationController(ILogger<NotificationController> logger, UserNotificationOptionService userNotificationOptionService, UserService userService, ErrorsService errorsService)
         {
             _logger = logger;
             _userNotificationOptionService = userNotificationOptionService;
             _userService = userService;
+            _errorsService = errorsService;
         }
 
         [HttpGet]

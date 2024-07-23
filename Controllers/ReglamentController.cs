@@ -8,12 +8,14 @@ namespace cardscore_api.Controllers
     [Route("api/reglament")]
     public class ReglamentController : ControllerBase
     {
+        private readonly ILogger<ReglamentController> _logger;
         private readonly ReglamentsService _reglamentsService;
         private readonly ErrorsService _errorsService;
-        public ReglamentController(ReglamentsService reglamentsService, ErrorsService errorsService)
+        public ReglamentController(ReglamentsService reglamentsService, ErrorsService errorsService, ILogger<ReglamentController> logger)
         {
             _reglamentsService = reglamentsService;
             _errorsService = errorsService;
+            _logger = logger;
         }
 
         [HttpGet]

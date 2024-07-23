@@ -10,14 +10,14 @@ namespace cardscore_api.Controllers
     [Route("api/parser")]
     public class ParserController : ControllerBase
     {
-        private readonly ILogger<AuthController> _logger;
+        private readonly ILogger<ParserController> _logger;
         private readonly ParserService _parserService;
         private readonly LeagueParseListService _parserListService;
         private readonly UrlService _urlService;
         private readonly LeaguesService _leaguesService;
         private readonly ErrorsService _errorsService;
         private readonly RedisService _redisService;
-        public ParserController(ILogger<AuthController> logger, ParserService parserService, LeagueParseListService parserListService, LeaguesService leaguesService, UrlService urlService, ErrorsService errorsService, RedisService redisService)
+        public ParserController(ILogger<ParserController> logger, ParserService parserService, LeagueParseListService parserListService, LeaguesService leaguesService, UrlService urlService, ErrorsService errorsService, RedisService redisService)
         {
             _logger = logger;
             _parserService = parserService;
