@@ -70,7 +70,7 @@ namespace cardscore_api.Services
                             var leagues = await _dataContext.Leagues.ToListAsync();
                             foreach (var league in leagues)
                             {
-                                var isTested = false;
+                                var isTested = true;
 
                                 if (league.NearestGame > DateTime.UtcNow && !isTested)
                                 {
