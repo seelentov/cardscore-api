@@ -15,5 +15,6 @@ namespace cardscore_api.Models
         public bool Active { get; set; } = true;
 
         public DateTime NearestGame { get; set; } = DateTime.UtcNow;
+        public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
     }
 }
