@@ -701,13 +701,13 @@ namespace cardscore_api.Services.ParserServices
 
                                     var gameItemHtml = gameItem.GetAttribute("innerHTML");
 
-                                    if (gameItemHtml.Contains("YC.png"))
-                                    {
-                                        player.YellowCards++;
-                                    }
-                                    else if (gameItemHtml.Contains("Y2C.png"))
+                                    if (gameItemHtml.Contains("Y2C.png"))
                                     {
                                         player.YellowRedCards++;
+                                    }
+                                    else if (gameItemHtml.Contains("YC.png"))
+                                    {
+                                        player.YellowCards++;
                                     }
 
                                     if (gameItemHtml.Contains("RC.png"))
