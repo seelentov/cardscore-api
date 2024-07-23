@@ -70,7 +70,7 @@ namespace cardscore_api.Services
                             var leagues = await _dataContext.Leagues.ToListAsync();
                             foreach (var league in leagues)
                             {
-                                var isTested = true;
+                                var isTested = false;
 
                                 if (league.NearestGame > DateTime.UtcNow && !isTested)
                                 {
@@ -187,7 +187,7 @@ namespace cardscore_api.Services
 
                                                     if (option.Active)
                                                     {
-                                                        /*await ThrowNotification(game, action, option.UserId, league, criticalYellowCardCount);*/
+                                                        await ThrowNotification(game, action, option.UserId, league, criticalYellowCardCount);
                                                         _logger.LogInformation("\n\nThrowNotification: " + option.UserId + ", " + key + "\n\n", Microsoft.Extensions.Logging.LogLevel.Information);
                                                     }
 
