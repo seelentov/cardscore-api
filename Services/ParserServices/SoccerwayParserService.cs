@@ -126,7 +126,7 @@ namespace cardscore_api.Services.ParserServices
 
                     DateTime dateTime = DateTime.UnixEpoch.AddSeconds(_formatService.ToInt(timeElement));
 
-                    var isTested = true;
+                    var isTested = false;
 
                     var isPlayedTwoHourAgo = dateTime >= DateTime.UtcNow.AddHours(isTested ? -24 : -4) && dateTime <= DateTime.UtcNow;
 
