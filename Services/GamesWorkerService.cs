@@ -51,7 +51,7 @@ namespace cardscore_api.Services
 
                             foreach (var league in leagues)
                             {
-                                if(league.LastUpdate > DateTime.UtcNow)
+                                if(league.LastUpdate != null && league.LastUpdate > DateTime.UtcNow)
                                 {
                                     continue;
                                 }
@@ -65,8 +65,10 @@ namespace cardscore_api.Services
                                     _logger.LogInformation($"Save {league.Title} \n", Microsoft.Extensions.Logging.LogLevel.Information);
                                 }
 
-                                league.LastUpdate = DateTime.UtcNow.AddHours(12);
+                                league.LastUpdate = DateTime.UtcNow.AddHours(24);
                                 _dataContext.SaveChanges();
+
+                                await Task.Delay(TimeSpan.FromHours(1));
                             }
                         }
                     }
