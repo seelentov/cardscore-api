@@ -290,6 +290,8 @@ namespace cardscore_api.Controllers
                     return Unauthorized(new { Errors = new { Authorization = new string[] { "\u0410\u043a\u043a\u0430\u0443\u043d\u0442\u0020\u043d\u0435\u0020\u0430\u043a\u0442\u0438\u0432\u0435\u043d" } } });
                 }
 
+                await _userService.ClearSameExpo(user.ExpoToken, user.Id);
+
                 string token = _jwtService.GetUserToken(new UserTokenData()
                 {
                     Id = user.Id,

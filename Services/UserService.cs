@@ -27,9 +27,37 @@ namespace cardscore_api.Services
             return data;
         }
 
+        public async Task ClearSameExpo(string expoToken, int userId)
+        {
+            var sameExpoUsers = await GetManyByExpoToken(expoToken);
+
+            if (sameExpoUsers != null && sameExpoUsers.Count > 0)
+            {
+                foreach (var sameExpoUser in sameExpoUsers)
+                {
+                    sameExpoUser.ExpoToken = "";
+                }
+            }
+
+            var user = await GetById(userId);
+
+            if (user != null)
+            {
+                user.ExpoToken = expoToken;
+            }
+
+            _context.SaveChanges();
+        }
+
+        public async Task<List<User>> GetManyByExpoToken(string expoToken)
+        {
+            var users = await _context.Users.Where(u => u.ExpoToken == expoToken).ToListAsync();
+
+            return users;
+        }
         public async Task<User> GetByExpoToken(string expoToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.ExpoToken == expoToken);
 
             return user;
         }
