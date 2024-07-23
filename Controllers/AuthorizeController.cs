@@ -52,18 +52,18 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    var message = "Заголовок Authorization пуст";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    var message = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Заголовок Authorization пуст"));
+
+                    return Unauthorized(new { Message = message, userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    var message = "Пользователь не найден";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    var message = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Пользователь не найден"));
+                    return Unauthorized(new { Message = message, userId });
+
                 }
 
                 user.PasswordHash = "";
@@ -86,18 +86,14 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    var message = "Заголовок Authorization пуст";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    return Unauthorized(new { Message = "Заголовок Authorization пуст", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    var message = "Пользователь не найден";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    return Unauthorized(new { Message = "Пользователь не найден", userId });
                 }
 
                 await _userService.UpdateExpoNotification(user.Id, newToken);
@@ -121,18 +117,14 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    var message = "Заголовок Authorization пуст";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    return Unauthorized(new { Message = "Заголовок Authorization пуст", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    var message = "Пользователь не найден";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    return Unauthorized(new { Message = "Пользователь не найден", userId });
                 }
 
                 var userNotification = await _notificationsService.GetNotificationByUserId(user.Id);
@@ -156,18 +148,14 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    var message = "Заголовок Authorization пуст";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    return Unauthorized(new { Message = "Заголовок Authorization пуст", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    var message = "Пользователь не найден";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    return Unauthorized(new { Message = "Пользователь не найден", userId });
                 }
 
                 var userNotificators = await _userNotificationOptionService.GetOptionsByUserId(user.Id);
@@ -205,18 +193,14 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    var message = "Заголовок Authorization пуст";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    return Unauthorized(new { Message = "Заголовок Authorization пуст", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    var message = "Пользователь не найден";
-                    var messageContent = new ByteArrayContent(Encoding.UTF8.GetBytes(message));
-                    return Unauthorized(messageContent);
+                    return Unauthorized(new { Message = "Пользователь не найден", userId });
                 }
 
                 var userNotificators = await _userNotificationOptionService.GetOptionsByUserId(user.Id);
