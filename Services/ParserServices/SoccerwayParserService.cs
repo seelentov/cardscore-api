@@ -128,7 +128,7 @@ namespace cardscore_api.Services.ParserServices
 
                     var isTested = true;
 
-                    var isPlayedTwoHourAgo = dateTime >= DateTime.UtcNow.AddHours(isTested ? -75 : -4) && dateTime <= DateTime.UtcNow;
+                    var isPlayedTwoHourAgo = dateTime >= DateTime.UtcNow.AddHours(isTested ? -24 : -4) && dateTime <= DateTime.UtcNow;
 
                     var activeGame = activeGameElem == "Playing" || isPlayedTwoHourAgo;
 
