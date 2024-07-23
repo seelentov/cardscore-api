@@ -4,7 +4,7 @@ namespace cardscore_api.Models.Dtos
 {
     public class CreateUserDto
     {
-        [Required(ErrorMessage = "Введите имя")]
+        [Required(ErrorMessage = "Введите имя ")]
         [Length(2, 20, ErrorMessage = "Длина имени должна быть от 2 символов до 20")]
         public string Name { get; set; }
         

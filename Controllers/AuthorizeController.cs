@@ -4,7 +4,6 @@ using cardscore_api.Models.LeagueParser;
 using cardscore_api.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
-using System.Text;
 
 namespace cardscore_api.Controllers
 {
@@ -52,18 +51,14 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    var message = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Заголовок Authorization пуст"));
-
-                    return Unauthorized(new { Message = message, userId });
+                    return Unauthorized(new { Message = "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a\u0020\u0041\u0075\u0074\u0068\u006f\u0072\u0069\u007a\u0061\u0074\u0069\u006f\u006e\u0020\u043f\u0443\u0441\u0442", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    var message = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Пользователь не найден"));
-                    return Unauthorized(new { Message = message, userId });
-
+                    return Unauthorized(new { Message = "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0020\u043d\u0435\u0020\u043d\u0430\u0439\u0434\u0435\u043d", userId });
                 }
 
                 user.PasswordHash = "";
@@ -86,14 +81,14 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    return Unauthorized(new { Message = "Заголовок Authorization пуст", userId });
+                    return Unauthorized(new { Message = "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a\u0020\u0041\u0075\u0074\u0068\u006f\u0072\u0069\u007a\u0061\u0074\u0069\u006f\u006e\u0020\u043f\u0443\u0441\u0442", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    return Unauthorized(new { Message = "Пользователь не найден", userId });
+                    return Unauthorized(new { Message = "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0020\u043d\u0435\u0020\u043d\u0430\u0439\u0434\u0435\u043d", userId });
                 }
 
                 await _userService.UpdateExpoNotification(user.Id, newToken);
@@ -117,15 +112,16 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    return Unauthorized(new { Message = "Заголовок Authorization пуст", userId });
+                    return Unauthorized(new { Message = "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a\u0020\u0041\u0075\u0074\u0068\u006f\u0072\u0069\u007a\u0061\u0074\u0069\u006f\u006e\u0020\u043f\u0443\u0441\u0442", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    return Unauthorized(new { Message = "Пользователь не найден", userId });
+                    return Unauthorized(new { Message = "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0020\u043d\u0435\u0020\u043d\u0430\u0439\u0434\u0435\u043d", userId });
                 }
+
 
                 var userNotification = await _notificationsService.GetNotificationByUserId(user.Id);
 
@@ -148,14 +144,14 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    return Unauthorized(new { Message = "Заголовок Authorization пуст", userId });
+                    return Unauthorized(new { Message = "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a\u0020\u0041\u0075\u0074\u0068\u006f\u0072\u0069\u007a\u0061\u0074\u0069\u006f\u006e\u0020\u043f\u0443\u0441\u0442", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    return Unauthorized(new { Message = "Пользователь не найден", userId });
+                    return Unauthorized(new { Message = "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0020\u043d\u0435\u0020\u043d\u0430\u0439\u0434\u0435\u043d", userId });
                 }
 
                 var userNotificators = await _userNotificationOptionService.GetOptionsByUserId(user.Id);
@@ -193,15 +189,16 @@ namespace cardscore_api.Controllers
 
                 if (userId == null)
                 {
-                    return Unauthorized(new { Message = "Заголовок Authorization пуст", userId });
+                    return Unauthorized(new { Message = "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a\u0020\u0041\u0075\u0074\u0068\u006f\u0072\u0069\u007a\u0061\u0074\u0069\u006f\u006e\u0020\u043f\u0443\u0441\u0442", userId });
                 }
 
                 var user = await _userService.GetById(int.Parse(userId));
 
                 if (user == null)
                 {
-                    return Unauthorized(new { Message = "Пользователь не найден", userId });
+                    return Unauthorized(new { Message = "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0020\u043d\u0435\u0020\u043d\u0430\u0439\u0434\u0435\u043d", userId });
                 }
+
 
                 var userNotificators = await _userNotificationOptionService.GetOptionsByUserId(user.Id);
 
@@ -278,19 +275,19 @@ namespace cardscore_api.Controllers
 
                 if (user == null)
                 {
-                    return Unauthorized(new { Errors = new { Authorization = new string[] { "Неверный логин или пароль" } } });
+                    return Unauthorized(new { Errors = new { Authorization = new string[] { "\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439\u0020\u043b\u043e\u0433\u0438\u043d\u0020\u0438\u043b\u0438\u0020\u043f\u0430\u0440\u043e\u043b\u044c" } } });
                 }
 
                 bool isCorrectPassword = _bCryptService.Verify(authDto.Password, user.PasswordHash);
 
                 if (!isCorrectPassword)
                 {
-                    return Unauthorized(new { Errors = new { Authorization = new string[] { "Неверный логин или пароль" } } });
+                    return Unauthorized(new { Errors = new { Authorization = new string[] { "\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439\u0020\u043b\u043e\u0433\u0438\u043d\u0020\u0438\u043b\u0438\u0020\u043f\u0430\u0440\u043e\u043b\u044c" } } });
                 }
 
                 if (!user.Active)
                 {
-                    return Unauthorized(new { Errors = new { Authorization = new string[] { "Аккаунт не активен. Возможно вы пропустили валидацию по номеру телефона" } } });
+                    return Unauthorized(new { Errors = new { Authorization = new string[] { "\u0410\u043a\u043a\u0430\u0443\u043d\u0442\u0020\u043d\u0435\u0020\u0430\u043a\u0442\u0438\u0432\u0435\u043d" } } });
                 }
 
                 string token = _jwtService.GetUserToken(new UserTokenData()
@@ -324,14 +321,14 @@ namespace cardscore_api.Controllers
 
                 if (dublicatedName)
                 {
-                    return BadRequest(new { Errors = new { Authorization = new string[] { "Пользователь с таким именем уже существует" } } });
+                    return BadRequest(new { Errors = new { Authorization = new string[] { "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0020\u0441\u0020\u0442\u0430\u043a\u0438\u043c\u0020\u0438\u043c\u0435\u043d\u0435\u043c\u0020\u0443\u0436\u0435\u0020\u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442" } } });
                 }
 
                 var dublicatedEmail = (await _userService.GetByEmail(createUserDto.Email)) != null;
 
                 if (dublicatedEmail)
                 {
-                    return BadRequest(new { Errors = new { Authorization = new string[] { "Пользователь с таким E-mail уже существует" } } });
+                    return BadRequest(new { Errors = new { Authorization = new string[] { "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0020\u0441\u0020\u0442\u0430\u043a\u0438\u043c\u0020\u0045\u002d\u006d\u0061\u0069\u006c\u0020\u0443\u0436\u0435\u0020\u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442" } } });
                 }
 
 
@@ -339,14 +336,14 @@ namespace cardscore_api.Controllers
 
                 if (dublicatedPhone)
                 {
-                    return BadRequest(new { Errors = new { Authorization = new string[] { "Пользователь с таким номером телефона уже существует" } } });
+                    return BadRequest(new { Errors = new { Authorization = new string[] { "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u0020\u0441\u0020\u0442\u0430\u043a\u0438\u043c\u0020\u043d\u043e\u043c\u0435\u0440\u043e\u043c\u0020\u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0430\u0020\u0443\u0436\u0435\u0020\u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442" } } });
                 }
 
                 var uniquePhone = (await _userService.IsUniqueByPhone(createUserDto.UniqueId));
 
                 if (!uniquePhone)
                 {
-                    return BadRequest(new { Errors = new { Authorization = new string[] { "Вы уже зарегистрировали аккаунт ранее" } } });
+                    return BadRequest(new { Errors = new { Authorization = new string[] { "\u0412\u044b\u0020\u0443\u0436\u0435\u0020\u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u043b\u0438\u0020\u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0020\u0440\u0430\u043d\u0435\u0435" } } });
                 }
 
                 var userData = await _userService.Create(createUserDto);
