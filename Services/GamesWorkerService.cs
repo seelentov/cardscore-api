@@ -61,14 +61,12 @@ namespace cardscore_api.Services
 
                                 if(leagueData != null)
                                 {
-                                    await _redisService.SetAsync("league:" + league.Url, JsonSerializer.Serialize(leagueData), TimeSpan.FromDays(1));
+                                    await _redisService.SetAsync("league:" + league.Url, JsonSerializer.Serialize(leagueData));
                                     _logger.LogInformation($"Save {league.Title} \n", Microsoft.Extensions.Logging.LogLevel.Information);
                                 }
 
                                 league.LastUpdate = DateTime.UtcNow.AddHours(24);
                                 _dataContext.SaveChanges();
-
-                                await Task.Delay(TimeSpan.FromHours(1));
                             }
                         }
                     }

@@ -220,6 +220,7 @@ namespace cardscore_api.Controllers
                     if (cachedData == null)
                     {
                         games = new List<Game>();
+                        Console.WriteLine("Fav Empty: " + favoriteLeague.Title);
                     }
                     else
                     {
