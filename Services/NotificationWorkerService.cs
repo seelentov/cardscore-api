@@ -174,7 +174,7 @@ namespace cardscore_api.Services
                                                     {
                                                         var player = await _redisService.GetAsync(action.Player.Url);
 
-                                                        if(player == null || action.ActionType != GameActionType.Switch)
+                                                        if(player == null && action.ActionType != GameActionType.Switch)
                                                         {
                                                             await _redisService.SetAsync("player:" + action.Player.Url, JsonSerializer.Serialize(action.Player), TimeSpan.FromDays(2));
                                                             Console.WriteLine("SavedPlayer: " + action.Player.Name);
