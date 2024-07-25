@@ -26,7 +26,7 @@ namespace cardscore_api.Services
             _errorsService = errorsService;
             _scopeFactory = scopeFactory;
             _logger = logger;
-
+            _seleniumService = seleniumService;
             _driver = seleniumService.GetDriver();
         }
 
