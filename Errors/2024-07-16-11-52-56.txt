@@ -1,7 +1,0 @@
-Error Type: ObjectDisposedException, Message: System.ObjectDisposedException: Cannot access a disposed object.
-Object name: 'IServiceProvider'.
-   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
-   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateScope()
-   at cardscore_api.Services.GamesWorkerService.<>c__DisplayClass7_0.<<StartAsync>b__0>d.MoveNext() in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\GamesWorkerService.cs:line 41, StackTrace:    at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
-   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateScope()
-   at cardscore_api.Services.GamesWorkerService.<>c__DisplayClass7_0.<<StartAsync>b__0>d.MoveNext() in C:\Users\komko\OneDrive\Документы\Work\cardscore\cardscore-api\Services\GamesWorkerService.cs:line 41
