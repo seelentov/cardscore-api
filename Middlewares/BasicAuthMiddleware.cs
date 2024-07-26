@@ -1,5 +1,6 @@
 ﻿using cardscore_api.Models;
 using cardscore_api.Services;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,9 +20,11 @@ namespace cardscore_api.Middlewares
         }
         public async Task InvokeAsync(HttpContext context)
         {
+            var isApiReq = context.Request.Path.Value.Contains("api");
+
             string basicKey = context.Request.Headers["ApiKey"].FirstOrDefault();
 
-            if (basicKey == null || basicKey != _basicKey)
+            if (isApiReq && (basicKey == null || basicKey != _basicKey))
             {
                 context.Response.StatusCode = 401;
                 return;
