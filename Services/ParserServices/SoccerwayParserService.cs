@@ -268,13 +268,13 @@ namespace cardscore_api.Services.ParserServices
                     }
                     else
                     {
-                        if (i < 500)
+                        if (i < 250)
                         {
                             var prevBtn = driver.FindElements(By.CssSelector(".block_competition_matches_summary .previous.disabled"));
 
                             if (prevBtn.Count > 0)
                             {
-                                i+= 501;
+                                i+= 251;
                                 driver.Navigate().Refresh();
 
                                 var nextBtn = driver.FindElements(By.CssSelector(".block_competition_matches_summary .next.disabled"));

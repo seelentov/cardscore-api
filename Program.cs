@@ -79,7 +79,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseMiddleware<BasicAuthMiddleware>();
+    /*app.UseMiddleware<BasicAuthMiddleware>();*/
 }
 
 app.UseStaticFiles();
