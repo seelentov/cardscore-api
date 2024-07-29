@@ -75,7 +75,7 @@ namespace cardscore_api.Controllers
             {
                 var normalizeUrl = _urlService.NormalizeUrl(url);
 
-                var cachedData = await _redisService.GetCachedDataByUrl(normalizeUrl);
+                var cachedData = await _redisService.GetCachedDataByUrl(normalizeUrl, DateTime.UtcNow.AddDays(-4));
                 
 
                 if (cachedData != null)

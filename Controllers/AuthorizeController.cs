@@ -215,7 +215,7 @@ namespace cardscore_api.Controllers
 
                     List<Game> games = new();
 
-                    var cachedData = await _redisService.GetCachedDataByUrl(favoriteLeague.Url);
+                    var cachedData = await _redisService.GetCachedDataByUrl(favoriteLeague.Url, DateTime.UtcNow.AddDays(-4));
 
                     if (cachedData == null)
                     {
