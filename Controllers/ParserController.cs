@@ -84,7 +84,7 @@ namespace cardscore_api.Controllers
                     return Ok(cachedData);
                 }
 
-                LeagueIncludeGames data = await _parserService.GetDataByUrl(normalizeUrl);
+                LeagueIncludeGames data = await _parserService.GetDataByUrl(normalizeUrl, DateTime.UtcNow.AddDays(-4));
 
                 if (data == null)
                 {

@@ -61,9 +61,11 @@ namespace cardscore_api.Services
 
         public async Task<LeagueIncludeGames>? GetCachedDataByUrl(string url, DateTime? startDate = null)
         {
+            var startDateProxy = startDate;
+
             if (startDate == null)
             {
-                startDate = DateTime.UtcNow.AddDays(-4);
+                startDateProxy = DateTime.UtcNow.AddDays(-4);
             }
 
             var cachedData = await GetAsync("league:" + url);
@@ -83,7 +85,7 @@ namespace cardscore_api.Services
 
             cachedDataRes = cachedDataSer;
 
-            foreach (var game in cachedDataSer.Games.Where(g => g.DateTime >= startDate).ToList())
+            foreach (var game in cachedDataSer.Games.Where(g => g.DateTime >= startDateProxy).ToList())
             {
                 gamesDict[game.Url] = game;
             }
