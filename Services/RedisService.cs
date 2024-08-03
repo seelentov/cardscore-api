@@ -94,7 +94,7 @@ namespace cardscore_api.Services
             {
                 var cachedDataActiveSer = JsonSerializer.Deserialize<List<Game>>(cachedDataActive);
 
-                foreach (var game in cachedDataActiveSer)
+                foreach (var game in cachedDataActiveSer.Where(g => g.DateTime >= startDateProxy).ToList())
                 {
                     gamesDict[game.Url] = game;
                 }
