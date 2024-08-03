@@ -24,6 +24,7 @@ namespace cardscore_api.Services
                 to = token,
                 title,
                 body,
+                priority = "high"
             };
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(message);
