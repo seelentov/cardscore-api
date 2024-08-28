@@ -788,6 +788,8 @@ namespace cardscore_api.Services.ParserServices
 
                                 var gamesCount = statElem.FindElement(By.CssSelector("td.appearances")).Text;
                                 addGamesCount = _formatService.ToInt(gamesCount);
+
+                                break;
                             }
 
                             player.Goal = addGoals;
