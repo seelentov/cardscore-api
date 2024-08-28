@@ -50,7 +50,7 @@ namespace cardscore_api.Services
 
                 var backupFiles = Directory.EnumerateFiles(_backupPath, "*.db");
 
-                if (backupFiles.Count() >= 10)
+                if (backupFiles.Count() >= 2)
                 {
                     var latestBackupFile = backupFiles.OrderByDescending(f => f).Last();
                     File.Delete(latestBackupFile);
