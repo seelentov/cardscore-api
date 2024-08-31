@@ -59,8 +59,6 @@ namespace cardscore_api.Services
                                 _logger.LogInformation($"Saving {league.Title} \n", Microsoft.Extensions.Logging.LogLevel.Information);
                                 var leagueData = await _parserService.GetDataByUrl(_driver, league.Url, DateTime.UtcNow.AddYears(-2));
 
-                                leagueData.Games = leagueData.Games.Where(g => g.DateTime < DateTime.UtcNow.AddHours(-4) || g.DateTime > DateTime.UtcNow).ToList();
-
                                 if (leagueData != null)
                                 {
                                     await _redisService.SetAsync("league:" + league.Url, JsonSerializer.Serialize(leagueData));
