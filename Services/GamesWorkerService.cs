@@ -67,6 +67,7 @@ namespace cardscore_api.Services
 
                                 league.LastUpdate = DateTime.UtcNow.AddHours(24);
                                 _dataContext.SaveChanges();
+                                await Task.Delay(TimeSpan.FromHours(1));
                             }
                         }
                     }
