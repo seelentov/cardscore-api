@@ -44,8 +44,7 @@ namespace cardscore_api.Services
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    try
-                    {
+                   
                         using (var scope = _scopeFactory.CreateScope())
                         {
                             var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
@@ -70,6 +69,9 @@ namespace cardscore_api.Services
                             var leagues = await _dataContext.Leagues.ToListAsync();
                             foreach (var league in leagues)
                             {
+                            try
+                            {
+
                                 var isTested = false;
 
                                 if (league.NearestGame > DateTime.UtcNow && !isTested)
@@ -201,21 +203,23 @@ namespace cardscore_api.Services
                                         }
                                     }
                                 }
+
+                            }
+                            catch (Exception ex)
+                            {
+                                if (_driver != null)
+                                {
+                                    _driver.Quit();
+                                }
+
+                                _driver = _seleniumService.GetDriver();
+                                _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+                                _logger.LogInformation("ReloadNotifSession!", Microsoft.Extensions.Logging.LogLevel.Error);
+                                _errorsService.CreateErrorFile(ex);
                             }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        if(_driver != null)
-                        {
-                            _driver.Quit();
-                        }
-
-                        _driver = _seleniumService.GetDriver();
-                        _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
-                        _logger.LogInformation("ReloadNotifSession!", Microsoft.Extensions.Logging.LogLevel.Error);
-                        _errorsService.CreateErrorFile(ex);
-                    }
+                    
                 }
             }, cancellationToken);
 

@@ -37,9 +37,10 @@ namespace cardscore_api.Services
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    try
-                    {
+                    
                         using (var scope = _scopeFactory.CreateScope())
+                        {
+                        try
                         {
                             var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
                             var _parserService = scope.ServiceProvider.GetRequiredService<ParserService>();
@@ -70,21 +71,21 @@ namespace cardscore_api.Services
                                 await Task.Delay(TimeSpan.FromHours(1));
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        if (_driver != null)
+                        catch (Exception ex)
                         {
-                            _driver.Quit();
+                            if (_driver != null)
+                            {
+                                _driver.Quit();
+                            }
+
+                            _driver = _seleniumService.GetDriver();
+                            _logger.LogInformation("GamesWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+                            _logger.LogInformation("ReloadGamesWSession!", Microsoft.Extensions.Logging.LogLevel.Error);
+
+                            await Task.Delay(TimeSpan.FromMinutes(30));
                         }
-
-                        _driver = _seleniumService.GetDriver();
-                        _logger.LogInformation("GamesWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
-                        _logger.LogInformation("ReloadGamesWSession!", Microsoft.Extensions.Logging.LogLevel.Error);
-                        _errorsService.CreateErrorFile(ex);
-
-                        _errorsService.CreateErrorFile(ex);
                     }
+                    
                 }
             }, cancellationToken);
 
