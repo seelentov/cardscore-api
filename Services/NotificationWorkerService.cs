@@ -213,8 +213,10 @@ namespace cardscore_api.Services
                                 }
 
                                 _driver = _seleniumService.GetDriver();
+
                                 _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
                                 _logger.LogInformation("ReloadNotifSession!", Microsoft.Extensions.Logging.LogLevel.Error);
+
                                 _errorsService.CreateErrorFile(ex);
                             }
                         }
