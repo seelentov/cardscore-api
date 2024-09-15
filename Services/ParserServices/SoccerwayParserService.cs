@@ -128,7 +128,7 @@ namespace cardscore_api.Services.ParserServices
 
                     var isTested = false;
 
-                    var isPlayedTwoHourAgo = dateTime >= DateTime.UtcNow.AddHours(isTested ? -24 : -4) && dateTime <= DateTime.UtcNow;
+                    var isPlayedTwoHourAgo = dateTime >= DateTime.UtcNow.AddHours(isTested ? -24 : -2) && dateTime <= DateTime.UtcNow;
 
                     var activeGame = activeGameElem == "Playing" || isPlayedTwoHourAgo;
 
@@ -194,6 +194,11 @@ namespace cardscore_api.Services.ParserServices
                         teams[1].Count = countsNested[1];
 
                         gameTime = await ParseTime(driver);
+
+                        if(gameTime == "" && dateTime <= DateTime.UtcNow)
+                        {
+                            gameTime = "Закончен";
+                        }
 
                         actions = await ParseActions(driver, leagueName, id, leagueUrl);
 
@@ -500,8 +505,6 @@ namespace cardscore_api.Services.ParserServices
                     player.Name = name;
 
                     driver.Navigate().Back();
-
-
 
                 }
                 else

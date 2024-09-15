@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using System;
+using System.Linq;
 using System.Text.Json;
 using static System.Collections.Specialized.BitVector32;
 
@@ -68,6 +69,7 @@ namespace cardscore_api.Services
 
                                 league.LastUpdate = DateTime.UtcNow.AddHours(72);
                                 _dataContext.SaveChanges();
+
                                 await Task.Delay(TimeSpan.FromHours(3));
                             }
                         }
