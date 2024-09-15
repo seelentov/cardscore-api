@@ -82,7 +82,7 @@ namespace cardscore_api.Services.ParserServices
 
         public async Task<List<Game>> GetGames(WebDriver driver, string leagueName, string leagueUrl, bool parseActions = true, bool onlyActive = false, DateTime? startDateFilter = null, DateTime? endDateFilter = null)
         {
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(60));
 
             var isPaged = driver.FindElements(By.CssSelector("select.page-dropdown")).Count > 0;
 
@@ -605,7 +605,7 @@ namespace cardscore_api.Services.ParserServices
             {
                 Console.WriteLine($"Parse {url}. {leagueUrl}!");
 
-                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(60));
 
                 var haveName = driver.FindElements(By.CssSelector("h1")).Count > 0;
 
