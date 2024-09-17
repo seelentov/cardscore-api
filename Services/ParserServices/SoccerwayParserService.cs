@@ -195,9 +195,9 @@ namespace cardscore_api.Services.ParserServices
 
                         gameTime = await ParseTime(driver);
 
-                        if(gameTime == "" && dateTime <= DateTime.UtcNow)
+                        if(dateTime <= DateTime.UtcNow)
                         {
-                            gameTime = "Закончен";
+                            teams[1].Name += "•";
                         }
 
                         actions = await ParseActions(driver, leagueName, id, leagueUrl);
