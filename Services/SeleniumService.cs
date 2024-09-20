@@ -41,6 +41,7 @@ namespace cardscore_api.Services
               */
             options.AddArgument("--no-sandbox");
 
+            options.AddArgument("--headless");
 
 
             _driverOptions = options;
