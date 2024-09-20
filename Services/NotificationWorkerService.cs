@@ -406,7 +406,7 @@ namespace cardscore_api.Services
 
                 if (parseData == null)
                 {
-                    Console.WriteLine($"No LeagueParseData found for URL: {url}");
+                    _logger.LogInformation($"No LeagueParseData found for URL: {url}", Microsoft.Extensions.Logging.LogLevel.Error);
                     return new List<Game>();
                 }
 
@@ -417,7 +417,8 @@ namespace cardscore_api.Services
 
                 if (activeGames == null)
                 {
-                    Console.WriteLine($"No activeGames found for URL: {url}");
+                    _logger.LogInformation($"No activeGames found for URL: {url}", Microsoft.Extensions.Logging.LogLevel.Error);
+
                     return new List<Game>();
                 }
 
