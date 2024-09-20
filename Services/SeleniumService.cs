@@ -14,7 +14,7 @@ namespace cardscore_api.Services
         {
             ChromeOptions options = new ChromeOptions();
 
-            options.AddUserProfilePreference("profile.default_content_settings.images", 2); // Блокирует изображения
+/*            options.AddUserProfilePreference("profile.default_content_settings.images", 2); // Блокирует изображения
             options.AddUserProfilePreference("profile.default_content_settings.stylesheets", 2); // Блокирует стили
             options.AddUserProfilePreference("profile.managed_default_content_settings.images", 2); // Блокирует изображения
             options.AddUserProfilePreference("profile.managed_default_content_settings.stylesheets", 2); // Блокирует стили
@@ -30,7 +30,7 @@ namespace cardscore_api.Services
               options.AddArgument("no-sandbox");
               options.AddArgument("--disable-extensions");
               options.AddArgument("--disable-features=NetworkService");
-  
+  */
             _driverOptions = options;
             _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
 
