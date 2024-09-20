@@ -112,13 +112,13 @@ namespace cardscore_api.Services
                                         else
                                         {
                                             league.NearestGame = DateTime.UtcNow.AddHours(12);
-                                            _logger.LogInformation("Empty: " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
+                                            _logger.LogInformation("Empty (nearestGame != null): " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
                                         }
                                     }
                                     else
                                     {
                                         league.NearestGame = DateTime.UtcNow.AddHours(12);
-                                        _logger.LogInformation("Empty: " + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
+                                        _logger.LogInformation("Empty: (leagueData != null)" + league.Title, Microsoft.Extensions.Logging.LogLevel.Information);
                                     };
 
                                     _logger.LogInformation("Wait: " + league.Title + " / " + league.NearestGame, Microsoft.Extensions.Logging.LogLevel.Information);
