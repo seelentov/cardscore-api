@@ -21,17 +21,37 @@ namespace cardscore_api.Services
 
         public NotificationWorkerService(Soccer365ParserService soccer365ParserService, IServiceScopeFactory scopeFactory, ErrorsService errorsService, ExpoNotificationsService expoNotificationsService, ILogger<NotificationWorkerService> logger, SeleniumService seleniumService, AsyncService asyncService)
         {
-            _soccer365ParserService = soccer365ParserService;
-            _scopeFactory = scopeFactory;
-            _errorsService = errorsService;
-            _expoNotificationsService = expoNotificationsService;
-            _logger = logger;
+            try
+            {
+                _scopeFactory = scopeFactory;
+                _errorsService = errorsService;
+                _expoNotificationsService = expoNotificationsService;
+                _logger = logger;
 
-            _driver = seleniumService.GetDriver();
+                _driver = seleniumService.GetDriver();
 
-            _seleniumService = seleniumService;
+                _seleniumService = seleniumService;
+                _soccer365ParserService = soccer365ParserService;
 
-            _asyncService = asyncService;
+                _asyncService = asyncService;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+                Console.WriteLine(ex);
+                _logger.LogInformation("ReloadNotifSession!", Microsoft.Extensions.Logging.LogLevel.Error);
+
+                _errorsService.CreateErrorFile(ex);
+
+                if (_driver != null)
+                {
+                    _driver.Quit();
+                }
+
+                _driver = _seleniumService.GetDriver();
+            }
+
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -404,23 +424,10 @@ namespace cardscore_api.Services
 
                 var parseData = await _dataContext.LeagueParseDatas.FirstOrDefaultAsync(l => l.Url == url);
 
-                if (parseData == null)
-                {
-                    _logger.LogInformation($"No LeagueParseData found for URL: {url}", Microsoft.Extensions.Logging.LogLevel.Error);
-                    return new List<Game>();
-                }
-
                 List<Game> activeGames = await _parserService.GetActiveGamesByUrl(
                     _driver, 
                     parseData.Url, 
                     name);
-
-                if (activeGames.Count < 1 || activeGames == null)
-                {
-                    _logger.LogInformation($"No activeGames found for URL: {url}", Microsoft.Extensions.Logging.LogLevel.Error);
-
-                    return new List<Game>();
-                }
 
                 return activeGames;
             }
