@@ -100,6 +100,8 @@ namespace cardscore_api.Services
                                 {
                                     var leagueData = await _redisService.GetCachedDataByUrl(league.Url);
 
+                                    _logger.LogInformation("leagueData: " + leagueData.Games.Count, Microsoft.Extensions.Logging.LogLevel.Information);
+
                                     if (leagueData != null)
                                     {
                                         var sortedGames = leagueData.Games.OrderBy(game => game.DateTime).ToList();
@@ -108,6 +110,7 @@ namespace cardscore_api.Services
                                         if (nearestGame != null)
                                         {
                                             league.NearestGame = nearestGame.DateTime;
+                                            _logger.LogInformation("NearestGame: " + nearestGame.DateTime, Microsoft.Extensions.Logging.LogLevel.Information);
                                         }
                                         else
                                         {
