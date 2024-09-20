@@ -38,14 +38,15 @@ namespace cardscore_api.Services
             options.AddArgument("--window-size=1920x1080");
             options.AddArgument("--headless=new");
 
+                        _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
+
               */
-            options.AddArgument("--no-sandbox");
 
             options.AddArgument("--headless");
 
 
             _driverOptions = options;
-            _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
+
 
         }
         public ChromeDriver GetDriver()
