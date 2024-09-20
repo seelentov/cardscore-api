@@ -24,13 +24,16 @@ namespace cardscore_api.Services
                         options.AddUserProfilePreference("extensions.enabled", false); // Отключает расширения
                         options.AddUserProfilePreference("privacy.clear_browsing_data_on_exit", true); // Очистка данных при выходе
                           options.AddArgument("--disable-features=NetworkService");
-              */
-            options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
+                          options.AddArgument("--disable-extensions");
+              options.AddArgument("--disable-features=NetworkService");
+
+                        options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
             options.AddArgument("--headless=new");
             options.AddArgument("disable-gpu");
               options.AddArgument("no-sandbox");
-              options.AddArgument("--disable-extensions");
-              options.AddArgument("--disable-features=NetworkService");
+              */
+
+
 
             _driverOptions = options;
             _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
