@@ -207,17 +207,18 @@ namespace cardscore_api.Services
                             }
                             catch (Exception ex)
                             {
+                                _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+                                Console.WriteLine(ex);
+                                _logger.LogInformation("ReloadNotifSession!", Microsoft.Extensions.Logging.LogLevel.Error);
+
+                                _errorsService.CreateErrorFile(ex);
+
                                 if (_driver != null)
                                 {
                                     _driver.Quit();
                                 }
 
                                 _driver = _seleniumService.GetDriver();
-
-                                _logger.LogInformation("NotifWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
-                                _logger.LogInformation("ReloadNotifSession!", Microsoft.Extensions.Logging.LogLevel.Error);
-
-                                _errorsService.CreateErrorFile(ex);
                             }
                         }
                     }
