@@ -45,11 +45,11 @@ namespace cardscore_api.Services
                         {
                         try
                         {
-                            var driver = _seleniumService.GetFirefox();
+                            _driver = _seleniumService.GetDriver();
 
-                            driver.Navigate().GoToUrl("http://google.com");
+                            _driver.Navigate().GoToUrl("http://google.com");
 
-                            var test = driver.FindElement(By.XPath("/h1"));
+                            var test = _driver.FindElement(By.XPath("/h1"));
 
                             _logger.LogInformation(test.Text, Microsoft.Extensions.Logging.LogLevel.Information);
 
