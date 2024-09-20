@@ -404,7 +404,10 @@ namespace cardscore_api.Services
 
                 var parseData = await _dataContext.LeagueParseDatas.FirstOrDefaultAsync(l => l.Url == url);
 
-                List<Game> activeGames = await _parserService.GetActiveGamesByUrl(_driver, parseData.Url, name);
+                List<Game> activeGames = await _parserService.GetActiveGamesByUrl(
+                    _driver, 
+                    parseData.Url, 
+                    name);
 
                 return activeGames;
             }
