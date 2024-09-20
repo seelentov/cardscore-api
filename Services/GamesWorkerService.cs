@@ -75,16 +75,18 @@ namespace cardscore_api.Services
                         }
                         catch (Exception ex)
                         {
+                            _logger.LogInformation("GamesWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
+                            _logger.LogInformation("ReloadGamesWSession!", Microsoft.Extensions.Logging.LogLevel.Error);
+
+                            await Task.Delay(TimeSpan.FromMinutes(30));
+
                             if (_driver != null)
                             {
                                 _driver.Quit();
                             }
 
                             _driver = _seleniumService.GetDriver();
-                            _logger.LogInformation("GamesWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
-                            _logger.LogInformation("ReloadGamesWSession!", Microsoft.Extensions.Logging.LogLevel.Error);
 
-                            await Task.Delay(TimeSpan.FromMinutes(30));
                         }
                     }
                     
