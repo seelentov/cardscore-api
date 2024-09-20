@@ -31,12 +31,17 @@ namespace cardscore_api.Services
             options.AddArgument("--headless=new");
             options.AddArgument("disable-gpu");
               options.AddArgument("no-sandbox");
+
+                        options.AddArgument("--no-sandbox");
+
+                        options.AddArgument("--disable-dev-shm-usage");
+            options.AddArgument("--window-size=1920x1080");
+
               */
 
-            options.AddArgument("--no-sandbox");
+
             options.AddArgument("--headless");
-            options.AddArgument("--disable-dev-shm-usage");
-            options.AddArgument("--window-size=1920x1080");
+
 
             _driverOptions = options;
             _driverOptions.PageLoadStrategy = PageLoadStrategy.Eager;
