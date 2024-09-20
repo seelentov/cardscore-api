@@ -415,6 +415,12 @@ namespace cardscore_api.Services
                     parseData.Url, 
                     name);
 
+                if (activeGames == null)
+                {
+                    Console.WriteLine($"No activeGames found for URL: {url}");
+                    return new List<Game>();
+                }
+
                 return activeGames;
             }
         }
