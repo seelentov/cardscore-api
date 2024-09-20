@@ -1,6 +1,7 @@
 ﻿using cardscore_api.Data;
 using cardscore_api.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
@@ -58,6 +59,10 @@ namespace cardscore_api.Services
                                     continue;
                                 }
 
+                                var leagueTest = await _parserService.GetDataByUrl(_driver, league.Url, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1));
+
+                                _logger.LogInformation(JsonSerializer.Serialize(leagueTest), Microsoft.Extensions.Logging.LogLevel.Information);
+                                
                                 _logger.LogInformation($"Saving {league.Title} \n", Microsoft.Extensions.Logging.LogLevel.Information);
                                 var leagueData = await _parserService.GetDataByUrl(_driver, league.Url, DateTime.UtcNow.AddYears(-2));
 
