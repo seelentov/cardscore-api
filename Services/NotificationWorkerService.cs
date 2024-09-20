@@ -415,7 +415,7 @@ namespace cardscore_api.Services
                     parseData.Url, 
                     name);
 
-                if (activeGames == null)
+                if (activeGames.Count < 1 || activeGames == null)
                 {
                     _logger.LogInformation($"No activeGames found for URL: {url}", Microsoft.Extensions.Logging.LogLevel.Error);
 
