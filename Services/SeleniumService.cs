@@ -2,6 +2,7 @@
 using OpenQA.Selenium;
 using WebDriverManager.DriverConfigs.Impl;
 using static WebDriverManager.DriverManager;
+using OpenQA.Selenium.Firefox;
 
 
 namespace cardscore_api.Services
@@ -37,6 +38,11 @@ namespace cardscore_api.Services
         public ChromeDriver GetDriver()
         {
             return new ChromeDriver(_driverOptions);
+        }
+
+        public FirefoxDriver GetFirefox()
+        {
+            return new FirefoxDriver();
         }
     }
 }
