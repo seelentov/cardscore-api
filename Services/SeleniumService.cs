@@ -36,11 +36,11 @@ namespace cardscore_api.Services
 
                         options.AddArgument("--disable-dev-shm-usage");
             options.AddArgument("--window-size=1920x1080");
+            options.AddArgument("--headless=new");
 
               */
             options.AddArgument("--no-sandbox");
 
-            options.AddArgument("--headless=new");
 
 
             _driverOptions = options;
