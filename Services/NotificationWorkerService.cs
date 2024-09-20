@@ -401,7 +401,11 @@ namespace cardscore_api.Services
 
                 var parseData = await _dataContext.LeagueParseDatas.FirstOrDefaultAsync(l => l.Url == url);
 
-                Console.WriteLine(_parserService);
+                if (parseData == null)
+                {
+                    Console.WriteLine($"No LeagueParseData found for URL: {url}");
+                    return new List<Game>();
+                }
 
                 List<Game> activeGames = await _parserService.GetActiveGamesByUrl(
                     _driver, 
