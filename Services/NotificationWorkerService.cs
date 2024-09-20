@@ -1,10 +1,7 @@
 ﻿using cardscore_api.Data;
 using cardscore_api.Models;
 using Microsoft.EntityFrameworkCore;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Firefox;
-using System.Net;
 using System.Text.Json;
 
 namespace cardscore_api.Services
@@ -403,6 +400,8 @@ namespace cardscore_api.Services
                 var _parserService = scope.ServiceProvider.GetRequiredService<ParserService>();
 
                 var parseData = await _dataContext.LeagueParseDatas.FirstOrDefaultAsync(l => l.Url == url);
+
+                Console.WriteLine(name);
 
                 List<Game> activeGames = await _parserService.GetActiveGamesByUrl(
                     _driver, 
