@@ -1,4 +1,5 @@
-﻿using cardscore_api.Data;
+﻿using AngleSharp.Dom;
+using cardscore_api.Data;
 using cardscore_api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -44,6 +45,14 @@ namespace cardscore_api.Services
                         {
                         try
                         {
+                            _driver = _seleniumService.GetDriver();
+
+                            _driver.Navigate().GoToUrl("http://google.com");
+
+                            var test = _driver.FindElement(By.XPath("/h1"));
+
+                            _logger.LogInformation(test.Text, Microsoft.Extensions.Logging.LogLevel.Information);
+
                             var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
                             var _parserService = scope.ServiceProvider.GetRequiredService<ParserService>();
                             var _redisService = scope.ServiceProvider.GetRequiredService<RedisService>();
@@ -59,10 +68,6 @@ namespace cardscore_api.Services
                                     continue;
                                 }
 
-                                var leagueTest = await _parserService.GetDataByUrl(_driver, league.Url, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1));
-
-                                _logger.LogInformation(JsonSerializer.Serialize(leagueTest), Microsoft.Extensions.Logging.LogLevel.Information);
-                                
                                 _logger.LogInformation($"Saving {league.Title} \n", Microsoft.Extensions.Logging.LogLevel.Information);
                                 var leagueData = await _parserService.GetDataByUrl(_driver, league.Url, DateTime.UtcNow.AddYears(-2));
 
