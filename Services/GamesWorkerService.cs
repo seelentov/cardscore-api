@@ -47,7 +47,7 @@ namespace cardscore_api.Services
                         {
                             _logger.LogInformation("Begin", Microsoft.Extensions.Logging.LogLevel.Information);
 
-                            _driver.Navigate().GoToUrl("https://example.com/");
+                            _driver.Navigate().GoToUrl("https://int.soccerway.com/");
 
                             _logger.LogInformation(_driver.FindElement(By.CssSelector("html")).Text, Microsoft.Extensions.Logging.LogLevel.Information);
 
