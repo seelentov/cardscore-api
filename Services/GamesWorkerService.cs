@@ -49,14 +49,7 @@ namespace cardscore_api.Services
 
                             _driver.Navigate().GoToUrl("http://google.com");
 
-                            _logger.LogInformation("Loaded", Microsoft.Extensions.Logging.LogLevel.Information);
-
-                            var test = _driver.FindElement(By.XPath("/h1"));
-
-                            _logger.LogInformation("Get", Microsoft.Extensions.Logging.LogLevel.Information);
-
-                            _logger.LogInformation("Good", Microsoft.Extensions.Logging.LogLevel.Information);
-                            _logger.LogInformation(test.Text, Microsoft.Extensions.Logging.LogLevel.Information);
+                            _logger.LogInformation(_driver.FindElement(By.CssSelector("html")).Text, Microsoft.Extensions.Logging.LogLevel.Information);
 
                             var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
                             var _parserService = scope.ServiceProvider.GetRequiredService<ParserService>();
