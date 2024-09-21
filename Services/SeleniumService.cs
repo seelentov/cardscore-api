@@ -27,7 +27,6 @@ namespace cardscore_api.Services
                           options.AddArgument("--disable-extensions");
               options.AddArgument("--disable-features=NetworkService");
 
-                        options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
             
             
    
@@ -45,6 +44,8 @@ namespace cardscore_api.Services
             options.AddArgument("disable-gpu");
             options.AddArgument("--headless=new");
 
+
+            options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
 
             _driverOptions = options;
 
