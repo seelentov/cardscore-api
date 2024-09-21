@@ -43,7 +43,7 @@ namespace cardscore_api.Services
               */
             options.AddArgument("no-sandbox");
 
-
+            options.BinaryLocation = "/usr/bin/google-chrome";
 
             _driverOptions = options;
 
