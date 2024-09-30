@@ -477,7 +477,7 @@ namespace cardscore_api.Services.ParserServices
                 var thisGame = activeGamesSer != null ? activeGamesSer.FirstOrDefault(g => g.Id == thisGameId) : null;
 
                 var thisAction = thisGame?.Actions.FirstOrDefault(a => a.Player.Name == player.Name && a.ActionType == gameAction.ActionType);
-_formatService.ClearString
+
                 var isPlayerParsed = thisAction != null && thisAction.Player.YellowCards != null;
 
                 if (!isPlayerParsed)
@@ -494,7 +494,7 @@ _formatService.ClearString
                                 player.RedCards++;
                                 break;
                             case (GameActionType.YellowCard):
-                                player.YellowCards_formatService.ClearString++;
+                                player.YellowCards++;
                                 break;
                             case (GameActionType.YellowRedCard):
                                 player.YellowRedCards++;
@@ -651,7 +651,7 @@ _formatService.ClearString
                 Player player = new()
                 {
                     Name = _formatService.ClearString(name),
-                    Position = position != null ? _formatService.ClearString(position) : "",
+                    Position = _formatService.ClearString(position),
                     Url = urlFinally,
                     ImageUrl = imageUrl,
                     Goal = 0,
