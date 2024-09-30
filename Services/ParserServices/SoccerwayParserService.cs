@@ -94,7 +94,7 @@ namespace cardscore_api.Services.ParserServices
 
             var count = isPaged ? pagesCount : isPaginated ? 500 : 1;
 
-            List<Game> games = new();
+            List <Game> games = new();
 
             for (int i = 0; i < count; i++)
             {
@@ -195,7 +195,7 @@ namespace cardscore_api.Services.ParserServices
 
                         gameTime = await ParseTime(driver);
 
-                        if (dateTime <= DateTime.UtcNow)
+                        if(dateTime <= DateTime.UtcNow)
                         {
                             teams[1].Name += "•";
                         }
@@ -222,12 +222,12 @@ namespace cardscore_api.Services.ParserServices
                     }
                 }
 
-
+                
                 if (!isPaged && isPaginated)
                 {
                     if (onlyActive)
                     {
-                        if (i == 0)
+                        if(i == 0)
                         {
                             var prevBtn = driver.FindElements(By.CssSelector(".block_competition_matches_summary .previous.disabled"));
 
@@ -269,7 +269,7 @@ namespace cardscore_api.Services.ParserServices
                         {
                             break;
                         }
-
+                        
                     }
                     else
                     {
@@ -279,7 +279,7 @@ namespace cardscore_api.Services.ParserServices
 
                             if (prevBtn.Count > 0)
                             {
-                                i += 251;
+                                i+= 251;
                                 driver.Navigate().Refresh();
 
                                 var nextBtn = driver.FindElements(By.CssSelector(".block_competition_matches_summary .next.disabled"));
@@ -395,7 +395,7 @@ namespace cardscore_api.Services.ParserServices
             actions.AddRange(leftTeamActions);
             actions.AddRange(rightTeamActions);
 
-            return actions;
+          return actions;
         }
 
         public async Task<List<GameAction>> ParseActionsByContainer(string leagueName, bool leftTeam, WebDriver driver, string thisGameId, string leagueUrl)
@@ -410,7 +410,7 @@ namespace cardscore_api.Services.ParserServices
             {
                 var playerElems = driver.FindElements(By.CssSelector($".combined-lineups-container .container.{selector} tr"));
 
-                if (playerElems.Count < 1 || playerElems.Count < i - 1)
+                if(playerElems.Count < 1 || playerElems.Count < i - 1)
                 {
                     break;
                 }
@@ -473,10 +473,11 @@ namespace cardscore_api.Services.ParserServices
 
                 var activeGames = await _redisService.GetAsync("league_active:" + leagueUrl);
 
-                var activeGamesSer = activeGames != null ? JsonSerializer.Deserialize<List<Game>>(activeGames) : null;
+                var activeGamesSer = activeGames != null ? JsonSerializer.Deserialize<List<Game>>(activeGames): null;
                 var thisGame = activeGamesSer != null ? activeGamesSer.FirstOrDefault(g => g.Id == thisGameId) : null;
 
                 var thisAction = thisGame?.Actions.FirstOrDefault(a => a.Player.Name == player.Name && a.ActionType == gameAction.ActionType);
+                
                 var isPlayerParsed = thisAction != null && thisAction.Player.YellowCards != null;
 
                 if (!isPlayerParsed)
