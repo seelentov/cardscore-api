@@ -477,7 +477,7 @@ namespace cardscore_api.Services.ParserServices
                 var thisGame = activeGamesSer != null ? activeGamesSer.FirstOrDefault(g => g.Id == thisGameId) : null;
 
                 var thisAction = thisGame?.Actions.FirstOrDefault(a => a.Player.Name == player.Name && a.ActionType == gameAction.ActionType);
-                
+_formatService.ClearString
                 var isPlayerParsed = thisAction != null && thisAction.Player.YellowCards != null;
 
                 if (!isPlayerParsed)
