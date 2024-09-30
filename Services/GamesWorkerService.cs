@@ -72,7 +72,7 @@ namespace cardscore_api.Services
                                 league.LastUpdate = DateTime.UtcNow.AddHours(72);
                                 _dataContext.SaveChanges();
 
-                               await Task.Delay(TimeSpan.FromHours(3));
+                               // await Task.Delay(TimeSpan.FromHours(3));
                             }
                         }
                         catch (Exception ex)
