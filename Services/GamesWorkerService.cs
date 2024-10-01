@@ -40,9 +40,9 @@ namespace cardscore_api.Services
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    
-                        using (var scope = _scopeFactory.CreateScope())
-                        {
+
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
                         try
                         {
                             var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
@@ -51,11 +51,11 @@ namespace cardscore_api.Services
 
                             var leagues = _dataContext.Leagues.ToList();
 
-                            leagues.Sort((x,y)=> y.Id.CompareTo(x.Id));
+                            leagues.Sort((x, y) => y.Id.CompareTo(x.Id));
 
                             foreach (var league in leagues)
                             {
-                                if(league.LastUpdate != null && league.LastUpdate > DateTime.UtcNow)
+                                if (league.LastUpdate != null && league.LastUpdate > DateTime.UtcNow)
                                 {
                                     continue;
                                 }
@@ -72,7 +72,7 @@ namespace cardscore_api.Services
                                 league.LastUpdate = DateTime.UtcNow.AddHours(72);
                                 _dataContext.SaveChanges();
 
-                               // await Task.Delay(TimeSpan.FromHours(3));
+                                await Task.Delay(TimeSpan.FromHours(3));
                             }
                         }
                         catch (Exception ex)
@@ -91,7 +91,7 @@ namespace cardscore_api.Services
 
                         }
                     }
-                    
+
                 }
             }, cancellationToken);
 
