@@ -69,7 +69,7 @@ namespace cardscore_api.Services
                                     _logger.LogInformation($"Save {league.Title} \n", Microsoft.Extensions.Logging.LogLevel.Information);
                                 }
 
-                                league.LastUpdate = DateTime.UtcNow.AddHours(72);
+                                league.LastUpdate = DateTime.UtcNow.AddHours(48);
                                 _dataContext.SaveChanges();
 
                                 await Task.Delay(TimeSpan.FromHours(1));
