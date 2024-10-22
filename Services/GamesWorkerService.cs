@@ -72,7 +72,7 @@ namespace cardscore_api.Services
                                 league.LastUpdate = DateTime.UtcNow.AddHours(72);
                                 _dataContext.SaveChanges();
 
-                                await Task.Delay(TimeSpan.FromHours(3));
+                                await Task.Delay(TimeSpan.FromHours(1));
                             }
                         }
                         catch (Exception ex)
@@ -80,7 +80,7 @@ namespace cardscore_api.Services
                             _logger.LogInformation("GamesWorkerError: " + ex.Message, Microsoft.Extensions.Logging.LogLevel.Error);
                             _logger.LogInformation("ReloadGamesWSession!", Microsoft.Extensions.Logging.LogLevel.Error);
 
-                            await Task.Delay(TimeSpan.FromMinutes(30));
+                            await Task.Delay(TimeSpan.FromMinutes(1));
 
                             if (_driver != null)
                             {
