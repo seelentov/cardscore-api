@@ -195,11 +195,6 @@ namespace cardscore_api.Services.ParserServices
 
                         gameTime = await ParseTime(driver);
 
-                        if (dateTime <= DateTime.UtcNow)
-                        {
-                            teams[1].Name += "•";
-                        }
-
                         actions = await ParseActions(driver, leagueName, id, leagueUrl);
 
                         driver.Navigate().Back();
