@@ -61,31 +61,31 @@ namespace cardscore_api.Services
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                   
-                        using (var scope = _scopeFactory.CreateScope())
+
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+                        var _redisService = scope.ServiceProvider.GetRequiredService<RedisService>();
+
+                        var oldCacheNotifications = _dataContext.CachedNotifications.Where(c => c.DateTime < DateTime.UtcNow.AddDays(-2)).ToList();
+
+                        if (oldCacheNotifications != null && oldCacheNotifications.Count > 0)
                         {
-                            var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-                            var _redisService = scope.ServiceProvider.GetRequiredService<RedisService>();
+                            _dataContext.CachedNotifications.RemoveRange(oldCacheNotifications);
+                            _dataContext.SaveChanges();
+                        }
 
-                            var oldCacheNotifications = _dataContext.CachedNotifications.Where(c => c.DateTime < DateTime.UtcNow.AddDays(-2)).ToList();
+                        var oldNotifications = _dataContext.Notifications.Where(c => c.DateTime < DateTime.UtcNow.AddDays(-10)).ToList();
 
-                            if (oldCacheNotifications != null && oldCacheNotifications.Count > 0)
-                            {
-                                _dataContext.CachedNotifications.RemoveRange(oldCacheNotifications);
-                                _dataContext.SaveChanges();
-                            }
+                        if (oldNotifications != null && oldNotifications.Count > 0)
+                        {
+                            _dataContext.Notifications.RemoveRange(oldNotifications);
+                            _dataContext.SaveChanges();
+                        }
 
-                            var oldNotifications = _dataContext.Notifications.Where(c => c.DateTime < DateTime.UtcNow.AddDays(-10)).ToList();
-
-                            if (oldNotifications != null && oldNotifications.Count > 0)
-                            {
-                                _dataContext.Notifications.RemoveRange(oldNotifications);
-                                _dataContext.SaveChanges();
-                            }
-
-                            var leagues = await _dataContext.Leagues.ToListAsync();
-                            foreach (var league in leagues)
-                            {
+                        var leagues = await _dataContext.Leagues.ToListAsync();
+                        foreach (var league in leagues)
+                        {
                             try
                             {
 
@@ -100,7 +100,7 @@ namespace cardscore_api.Services
 
 
                                 var activeGames = new List<Game>();
-                                
+
                                 activeGames = await GetActiveGames(league.Url, league.Title);
 
                                 if (activeGames != null && activeGames.Count > 0)
@@ -181,7 +181,8 @@ namespace cardscore_api.Services
                                                 var isCriticalYellowCard = haveCardCount &&
                                                        ((action.Player.YellowCards) == option.CardCount) ||
                                                        ((action.Player.YellowCards) == option.CardCountTwo) ||
-                                                       ((action.Player.YellowCards) == option.CardCountThree);
+                                                       ((action.Player.YellowCards) == option.CardCountThree) ||
+                                                       ((action.Player.YellowCards) == option.CardCountFour);
 
                                                 int? criticalYellowCardCount = isCriticalYellowCard ?
                                                 (((action.Player.YellowCards) == option.CardCount) ? 1 :
@@ -196,7 +197,7 @@ namespace cardscore_api.Services
                                                     {
                                                         var player = await _redisService.GetAsync(action.Player.Url);
 
-                                                        if(player == null && action.ActionType != GameActionType.Switch)
+                                                        if (player == null && action.ActionType != GameActionType.Switch)
                                                         {
                                                             await _redisService.SetAsync("player:" + action.Player.Url, JsonSerializer.Serialize(action.Player), TimeSpan.FromDays(2));
                                                             Console.WriteLine("SavedPlayer: " + action.Player.Name);
@@ -242,7 +243,7 @@ namespace cardscore_api.Services
                             }
                         }
                     }
-                    
+
                 }
             }, cancellationToken);
 
@@ -425,8 +426,8 @@ namespace cardscore_api.Services
                 var parseData = await _dataContext.LeagueParseDatas.FirstOrDefaultAsync(l => l.Url == url);
 
                 List<Game> activeGames = await _parserService.GetActiveGamesByUrl(
-                    _driver, 
-                    parseData.Url, 
+                    _driver,
+                    parseData.Url,
                     name);
 
                 return activeGames;

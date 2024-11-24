@@ -19,12 +19,15 @@ namespace cardscore_api.Services
         public async Task<List<UserNotificationOptionResponse>> GetOptionsByUserId(int userId)
         {
             var option = await _context.UserNotificationOptions.Where(o => o.UserId == userId)
-                .Select(o => new UserNotificationOptionResponse (){ 
-                    Name = o.Name, 
-                    CardCount = o.CardCount, 
-                    CardCountTwo = o.CardCountTwo, 
-                    CardCountThree = o.CardCountThree, 
-                    Active = o.Active})
+                .Select(o => new UserNotificationOptionResponse()
+                {
+                    Name = o.Name,
+                    CardCount = o.CardCount,
+                    CardCountTwo = o.CardCountTwo,
+                    CardCountThree = o.CardCountThree,
+                    CardCountFour = o.CardCountFour,
+                    Active = o.Active
+                })
                 .ToListAsync();
             return option;
         }
@@ -41,11 +44,12 @@ namespace cardscore_api.Services
             {
                 var optionData = await _context.UserNotificationOptions.FirstOrDefaultAsync(o => o.User.Id == userId && o.Name == option.Name);
 
-                if(optionData != null)
+                if (optionData != null)
                 {
                     optionData.CardCount = option.CardCount;
                     optionData.CardCountTwo = option.CardCountTwo;
                     optionData.CardCountThree = option.CardCountThree;
+                    optionData.CardCountFour = option.CardCountFour;
                     optionData.Active = option.Active;
                 }
             }
@@ -65,11 +69,12 @@ namespace cardscore_api.Services
 
             UserNotificationOption userNotificationOption = new()
             {
-               User = user,
-               Name = name,
-               CardCount = 3,
-               CardCountTwo = 6,
-               CardCountThree = 9,
+                User = user,
+                Name = name,
+                CardCount = 3,
+                CardCountTwo = 6,
+                CardCountThree = 9,
+                CardCountFour = 12,
                 UserNotificationOptionType = UserNotificationOptionType.YellowCard,
             };
 
