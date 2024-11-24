@@ -17,7 +17,7 @@ namespace cardscore_api.Services.ParserServices
         private readonly string _domain = "https://ru.soccerway.com";
         private readonly int _timeFix = -2;
         private readonly FormatService _formatService;
-        private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-4);
+        private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-7);
         private readonly AngleSharp.IConfiguration _configuration;
         private readonly ErrorsService _errorsService;
         private readonly RedisService _redisService;

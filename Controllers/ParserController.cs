@@ -75,8 +75,8 @@ namespace cardscore_api.Controllers
             {
                 var normalizeUrl = _urlService.NormalizeUrl(url);
 
-                var cachedData = await _redisService.GetCachedDataByUrl(normalizeUrl, DateTime.UtcNow.AddDays(-4));
-                
+                var cachedData = await _redisService.GetCachedDataByUrl(normalizeUrl, DateTime.UtcNow.AddDays(-7));
+
 
                 if (cachedData != null)
                 {
@@ -84,7 +84,7 @@ namespace cardscore_api.Controllers
                     return Ok(cachedData);
                 }
 
-                LeagueIncludeGames data = await _parserService.GetDataByUrl(normalizeUrl, DateTime.UtcNow.AddDays(-4));
+                LeagueIncludeGames data = await _parserService.GetDataByUrl(normalizeUrl, DateTime.UtcNow.AddDays(-7));
 
                 if (data == null)
                 {
@@ -112,13 +112,13 @@ namespace cardscore_api.Controllers
 
                 var cachedLeague = await _redisService.GetCachedDataByUrl(normalizeUrlLeague);
 
-                if(cachedLeague != null)
+                if (cachedLeague != null)
                 {
-                    var thisGame = cachedLeague.Games.FirstOrDefault(g=>g.Url == normalizeUrlGame);
+                    var thisGame = cachedLeague.Games.FirstOrDefault(g => g.Url == normalizeUrlGame);
 
                     return Ok(thisGame);
                 }
-                
+
                 League leagueData = await _leaguesService.GetByUrl(normalizeUrlLeague);
 
                 Game gameData = await _parserService.ParseGameByPage(normalizeUrlGame, leagueData.Title);

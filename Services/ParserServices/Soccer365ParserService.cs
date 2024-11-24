@@ -18,7 +18,7 @@ namespace cardscore_api.Services
         private readonly int _timeFix = -2;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly HtmlWeb _web;
-        private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-4);
+        private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-7);
 
         private readonly FormatService _formatService;
 
@@ -727,93 +727,93 @@ namespace cardscore_api.Services
 
         public async Task<Player> CheckActionsByPlayerPage(List<GameAction> gameActions, Player player, string leagueName, Team[] teams)
         {
-                var newPlayer = new Player()
+            var newPlayer = new Player()
+            {
+                Name = player.Name,
+                Url = player.Url,
+                YellowCards = player.YellowCards,
+                ImageUrl = player.ImageUrl,
+                GameCount = player.GameCount,
+                Goal = player.Goal,
+                Assists = player.Assists,
+                RedCards = player.RedCards,
+                YellowRedCards = player.YellowRedCards,
+                Position = player.Position,
+            };
+
+            string tabLastGames = "&tab=last_games";
+
+            var tabPlayerDoc = _web.Load(player.Url + tabLastGames);
+
+            int refetchCounter = 0;
+
+            while (tabPlayerDoc.ParsedText.Contains("503 Service Temporarily Unavailable") && refetchCounter < 20)
+            {
+                refetchCounter++;
+                await Task.Delay(100);
+                tabPlayerDoc = _web.Load(player.Url + tabLastGames);
+            }
+
+            var table = tabPlayerDoc.DocumentNode.SelectSingleNode("//table[contains(@class, 'tablesorter')]");
+
+            var nameForPlayerPage = string.Join(" ", _formatService.ClearString(leagueName).Split(" ")[0..^1]);
+
+            string selector = nameForPlayerPage.Contains('\'') ? nameForPlayerPage.Split('\'')[1] : nameForPlayerPage;
+
+            var tableThisGameItem = table.SelectSingleNode($".//tr[contains(., '{selector}') and contains(., '{teams[0].Name}') and contains(., '{teams[1].Name}')]");
+
+            if (tableThisGameItem == null)
+            {
+                foreach (var action in gameActions)
                 {
-                    Name = player.Name,
-                    Url = player.Url,
-                    YellowCards = player.YellowCards,
-                    ImageUrl = player.ImageUrl,
-                    GameCount = player.GameCount,
-                    Goal = player.Goal,
-                    Assists = player.Assists,
-                    RedCards = player.RedCards,
-                    YellowRedCards = player.YellowRedCards,
-                    Position = player.Position,
-                };
-
-                string tabLastGames = "&tab=last_games";
-
-                var tabPlayerDoc = _web.Load(player.Url + tabLastGames);
-
-                int refetchCounter = 0;
-
-                while (tabPlayerDoc.ParsedText.Contains("503 Service Temporarily Unavailable") && refetchCounter < 20)
-                {
-                    refetchCounter++;
-                    await Task.Delay(100);
-                    tabPlayerDoc = _web.Load(player.Url + tabLastGames);
-                }
-
-                var table = tabPlayerDoc.DocumentNode.SelectSingleNode("//table[contains(@class, 'tablesorter')]");
-
-                var nameForPlayerPage = string.Join(" ", _formatService.ClearString(leagueName).Split(" ")[0..^1]);
-
-                string selector = nameForPlayerPage.Contains('\'') ? nameForPlayerPage.Split('\'')[1] : nameForPlayerPage;
-
-                var tableThisGameItem = table.SelectSingleNode($".//tr[contains(., '{selector}') and contains(., '{teams[0].Name}') and contains(., '{teams[1].Name}')]");
-
-                if (tableThisGameItem == null)
-                {
-                    foreach (var action in gameActions)
+                    switch (action.ActionType)
                     {
-                        switch (action.ActionType)
-                        {
-                            case (GameActionType.YellowCard):
-                                newPlayer.YellowCards++;
-                                break;
-                            case (GameActionType.YellowRedCard):
+                        case (GameActionType.YellowCard):
+                            newPlayer.YellowCards++;
+                            break;
+                        case (GameActionType.YellowRedCard):
+                            newPlayer.YellowRedCards++;
+                            newPlayer.YellowCards--;
+                            break;
+                        case (GameActionType.RedCard):
+                            newPlayer.RedCards++;
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                var playerYellowCardsElem = tableThisGameItem.SelectSingleNode(".//td[7]");
+                var playerRedCardsElem = tableThisGameItem.SelectSingleNode(".//td[9]");
+                var playerYellowRedCardsElem = tableThisGameItem.SelectSingleNode(".//td[8]");
+
+                var isYellowCardExist = (playerYellowCardsElem != null && _formatService.ClearString(playerYellowCardsElem.InnerText) != "&nbsp;");
+                var isYellowRedCardExist = (playerYellowRedCardsElem != null && _formatService.ClearString(playerYellowRedCardsElem.InnerText) != "&nbsp;");
+                var isRedCardExist = (playerRedCardsElem != null && _formatService.ClearString(playerRedCardsElem.InnerText) != "&nbsp;");
+
+
+                foreach (var action in gameActions)
+                {
+                    switch (action.ActionType)
+                    {
+                        case (GameActionType.YellowCard):
+                            if (!isYellowCardExist) newPlayer.YellowCards++;
+                            break;
+                        case (GameActionType.YellowRedCard):
+                            if (!isYellowRedCardExist)
+                            {
                                 newPlayer.YellowRedCards++;
                                 newPlayer.YellowCards--;
-                                break;
-                            case (GameActionType.RedCard):
-                                newPlayer.RedCards++;
-                                break;
-                        }
+                            }
+                            break;
+                        case (GameActionType.RedCard):
+                            if (!isRedCardExist) newPlayer.RedCards++;
+                            break;
                     }
                 }
-                else
-                {
-                    var playerYellowCardsElem = tableThisGameItem.SelectSingleNode(".//td[7]");
-                    var playerRedCardsElem = tableThisGameItem.SelectSingleNode(".//td[9]");
-                    var playerYellowRedCardsElem = tableThisGameItem.SelectSingleNode(".//td[8]");
+            }
 
-                    var isYellowCardExist = (playerYellowCardsElem != null && _formatService.ClearString(playerYellowCardsElem.InnerText) != "&nbsp;");
-                    var isYellowRedCardExist = (playerYellowRedCardsElem != null && _formatService.ClearString(playerYellowRedCardsElem.InnerText) != "&nbsp;");
-                    var isRedCardExist = (playerRedCardsElem != null && _formatService.ClearString(playerRedCardsElem.InnerText) != "&nbsp;");
-
-
-                    foreach (var action in gameActions)
-                    {
-                        switch (action.ActionType)
-                        {
-                            case (GameActionType.YellowCard):
-                                if (!isYellowCardExist) newPlayer.YellowCards++;
-                                break;
-                            case (GameActionType.YellowRedCard):
-                                if (!isYellowRedCardExist)
-                                {
-                                    newPlayer.YellowRedCards++;
-                                    newPlayer.YellowCards--;
-                                }
-                                break;
-                            case (GameActionType.RedCard):
-                                if (!isRedCardExist) newPlayer.RedCards++;
-                                break;
-                        }
-                    }
-                }
-
-                return newPlayer;
+            return newPlayer;
         }
 
         public async Task<Game> ParseGame(HtmlNode htmlNode, string leagueName, bool parseActions = true, bool onlyActive = false, DateTime? startDateFilter = null, DateTime? endDateFilter = null)

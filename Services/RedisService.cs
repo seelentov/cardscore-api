@@ -65,7 +65,7 @@ namespace cardscore_api.Services
 
             if (startDate == null)
             {
-                startDateProxy = DateTime.UtcNow.AddDays(-4);
+                startDateProxy = DateTime.UtcNow.AddDays(-7);
             }
 
             var cachedData = await GetAsync("league:" + url);

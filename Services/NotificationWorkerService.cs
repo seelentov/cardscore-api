@@ -67,7 +67,7 @@ namespace cardscore_api.Services
                         var _dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
                         var _redisService = scope.ServiceProvider.GetRequiredService<RedisService>();
 
-                        var oldCacheNotifications = _dataContext.CachedNotifications.Where(c => c.DateTime < DateTime.UtcNow.AddDays(-2)).ToList();
+                        var oldCacheNotifications = _dataContext.CachedNotifications.Where(c => c.DateTime < DateTime.UtcNow.AddDays(-5)).ToList();
 
                         if (oldCacheNotifications != null && oldCacheNotifications.Count > 0)
                         {

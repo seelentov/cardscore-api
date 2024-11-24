@@ -25,7 +25,7 @@ namespace cardscore_api.Controllers
         private readonly UrlService _urlService;
         private readonly RedisService _redisService;
 
-        private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-4);
+        private readonly DateTime _startDate = DateTime.UtcNow.AddDays(-7);
         public AuthController(ILogger<AuthController> logger, UserService userService, BCryptService bCryptService, JwtService jwtService, UserNotificationOptionService userNotificationOptionService, LeaguesService leaguesService, LeagueParseListService parserListService, ErrorsService errorsService, NotificationsService notificationsService, UrlService urlService, ParserService parserService, RedisService redisService)
         {
             _logger = logger;
@@ -215,7 +215,7 @@ namespace cardscore_api.Controllers
 
                     List<Game> games = new();
 
-                    var cachedData = await _redisService.GetCachedDataByUrl(favoriteLeague.Url, DateTime.UtcNow.AddDays(-4));
+                    var cachedData = await _redisService.GetCachedDataByUrl(favoriteLeague.Url, DateTime.UtcNow.AddDays(-7));
 
                     if (cachedData == null)
                     {

@@ -25,7 +25,7 @@ namespace cardscore_api.Services
             _scopeFactory = scopeFactory;
             _redisService = redisService;
 
-            _startDate = DateTime.UtcNow.AddDays(-4);
+            _startDate = DateTime.UtcNow.AddDays(-7);
         }
 
         public async Task<List<Game>> GetGamesByUrl(string url, string leagueName, DateTime? startDate = null!, DateTime? endDate = null!)
@@ -226,7 +226,7 @@ namespace cardscore_api.Services
 
                 var leagueParseData = await _leagueParseListService.GetByUrl(url);
 
-                var league = _dataContext.Leagues.SingleOrDefault(l=>l.Url == url);
+                var league = _dataContext.Leagues.SingleOrDefault(l => l.Url == url);
 
                 if (leagueParseData != null)
                 {
@@ -301,7 +301,7 @@ namespace cardscore_api.Services
             return games;
         }
 
-       
+
 
 
     }
