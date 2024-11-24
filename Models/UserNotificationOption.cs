@@ -11,7 +11,6 @@ namespace cardscore_api.Models
         public int CardCount { get; set; } = 1;
         public int CardCountTwo { get; set; } = 2;
         public int CardCountThree { get; set; } = 3;
-        public int CardCountFour { get; set; } = 4;
 
         public bool Active { get; set; } = true;
         public UserNotificationOptionType UserNotificationOptionType { get; set; } = UserNotificationOptionType.YellowCard;
@@ -23,7 +22,6 @@ namespace cardscore_api.Models
         public int CardCount { get; set; } = 1;
         public int CardCountTwo { get; set; } = 2;
         public int CardCountThree { get; set; } = 3;
-        public int CardCountFour { get; set; } = 3;
         public bool Active { get; set; }
 
     }

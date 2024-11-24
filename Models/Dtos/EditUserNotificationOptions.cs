@@ -15,7 +15,6 @@ namespace cardscore_api.Models.Dtos
         public int CardCount { get; set; }
         public int CardCountTwo { get; set; }
         public int CardCountThree { get; set; }
-        public int CardCountFour { get; set; }
         public bool Active { get; set; }
     }
 

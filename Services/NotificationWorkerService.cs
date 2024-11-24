@@ -181,8 +181,7 @@ namespace cardscore_api.Services
                                                 var isCriticalYellowCard = haveCardCount &&
                                                        ((action.Player.YellowCards) == option.CardCount) ||
                                                        ((action.Player.YellowCards) == option.CardCountTwo) ||
-                                                       ((action.Player.YellowCards) == option.CardCountThree) ||
-                                                       ((action.Player.YellowCards) == option.CardCountFour);
+                                                       ((action.Player.YellowCards) == option.CardCountThree);
 
                                                 int? criticalYellowCardCount = isCriticalYellowCard ?
                                                 (((action.Player.YellowCards) == option.CardCount) ? 1 :
