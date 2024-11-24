@@ -25,6 +25,7 @@ namespace cardscore_api.Services
                     CardCount = o.CardCount,
                     CardCountTwo = o.CardCountTwo,
                     CardCountThree = o.CardCountThree,
+                    CardCountFour = o.CardCountFour,
                     Active = o.Active
                 })
                 .ToListAsync();
@@ -48,6 +49,7 @@ namespace cardscore_api.Services
                     optionData.CardCount = option.CardCount;
                     optionData.CardCountTwo = option.CardCountTwo;
                     optionData.CardCountThree = option.CardCountThree;
+                    optionData.CardCountFour = option.CardCountFour;
                     optionData.Active = option.Active;
                 }
             }
@@ -72,6 +74,7 @@ namespace cardscore_api.Services
                 CardCount = 3,
                 CardCountTwo = 6,
                 CardCountThree = 9,
+                CardCountFour = 12,
                 UserNotificationOptionType = UserNotificationOptionType.YellowCard,
             };
 
